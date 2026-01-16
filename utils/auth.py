@@ -227,8 +227,12 @@ class GoogleAuth:
         st.title("AI Vibe Agents")
         
         # Add custom bot icon with responsive sizing
+        # Use relative path for bot icon (works locally and on Streamlit Cloud)
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        bot_icon_path = os.path.join(base_dir, "bot.png")
         try:
-            st.image("/Users/ninadjoshi/Documents/GitHub/Denken-Labs/Projects/bot.png", width=100)
+            if os.path.exists(bot_icon_path):
+                st.image(bot_icon_path, width=100)
         except Exception as e:
             st.error(f"Could not load bot icon: {e}")
         
