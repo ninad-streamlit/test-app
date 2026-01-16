@@ -6,7 +6,12 @@ from utils.auth import check_authentication, get_user_display_info, GoogleAuth
 def main():
     # Set page config with bot icon as favicon
     config = STREAMLIT_CONFIG.copy()
-    config['page_icon'] = "/Users/ninadjoshi/Documents/GitHub/Denken-Labs/Projects/bot.png"
+    # Use relative path for bot icon (works locally and on Streamlit Cloud)
+    bot_icon_path = os.path.join(os.path.dirname(__file__), "bot.png")
+    if os.path.exists(bot_icon_path):
+        config['page_icon'] = bot_icon_path
+    else:
+        config['page_icon'] = "🤖"  # Fallback to emoji if image not found
     st.set_page_config(**config)
     
     # Mobile-responsive CSS
@@ -48,8 +53,10 @@ def main():
     with col1:
         st.title("🤖 AI Vibe Agents")
         # Add custom bot icon
+        bot_icon_path = os.path.join(os.path.dirname(__file__), "bot.png")
         try:
-            st.image("/Users/ninadjoshi/Documents/GitHub/Denken-Labs/Projects/bot.png", width=100)
+            if os.path.exists(bot_icon_path):
+                st.image(bot_icon_path, width=100)
         except Exception as e:
             pass
     
