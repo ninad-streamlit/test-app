@@ -49,7 +49,7 @@ def main():
     user_info = get_user_display_info()
     
     # Header - responsive
-    col1, col2 = st.columns([4, 1])
+    col1, col2, col3 = st.columns([3, 1, 1])
     with col1:
         st.title("🤖 AI Vibe Agents")
         # Add custom bot icon
@@ -66,6 +66,13 @@ def main():
             auth = GoogleAuth()
             auth.logout()
             return
+    
+    with col3:
+        st.markdown("""
+        <div style="text-align: right; padding-top: 20px;">
+            <h3 style="color: #1f77b4; margin: 0; font-weight: normal;">v0.1</h3>
+        </div>
+        """, unsafe_allow_html=True)
     
     st.markdown("---")
     
