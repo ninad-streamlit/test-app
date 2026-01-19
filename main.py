@@ -232,61 +232,81 @@ def main():
     </style>
     <script>
     function styleButtons() {
-        // Purple for agent buttons - more aggressive targeting
-        var buttons = document.querySelectorAll('button[kind="primary"], button.stButton > button, button[data-testid*="baseButton"]');
-        buttons.forEach(function(btn) {
-            var text = (btn.textContent || btn.innerText || '').trim();
-            // Purple for Build Your Own Agent
-            if (text.includes('Build Your Own Agent') || text.includes('🚀 Build Your Own Agent')) {
-                btn.style.cssText += 'background-color: #6b46c1 !important; border-color: #6b46c1 !important; color: white !important;';
-                var originalBg = '#6b46c1';
-                var hoverBg = '#553c9a';
-                btn.addEventListener('mouseenter', function() {
-                    this.style.cssText += 'background-color: ' + hoverBg + ' !important; border-color: ' + hoverBg + ' !important;';
-                });
-                btn.addEventListener('mouseleave', function() {
-                    this.style.cssText += 'background-color: ' + originalBg + ' !important; border-color: ' + originalBg + ' !important;';
-                });
-            }
-            // Purple for Create button (but not for mission-related)
-            if ((text.includes('Create') || text === 'Create') && !text.includes('Mission') && !text.includes('Save')) {
-                btn.style.cssText += 'background-color: #6b46c1 !important; border-color: #6b46c1 !important; color: white !important;';
-                var originalBg = '#6b46c1';
-                var hoverBg = '#553c9a';
-                btn.addEventListener('mouseenter', function() {
-                    this.style.cssText += 'background-color: ' + hoverBg + ' !important; border-color: ' + hoverBg + ' !important;';
-                });
-                btn.addEventListener('mouseleave', function() {
-                    this.style.cssText += 'background-color: ' + originalBg + ' !important; border-color: ' + originalBg + ' !important;';
-                });
-            }
-            // Dark green for Activate Mission
-            if (text.includes('Activate Mission') || text.includes('🚀 Activate Mission')) {
-                btn.style.cssText += 'background-color: #059669 !important; border-color: #059669 !important; color: white !important;';
-                var originalBg = '#059669';
-                var hoverBg = '#047857';
-                btn.addEventListener('mouseenter', function() {
-                    this.style.cssText += 'background-color: ' + hoverBg + ' !important; border-color: ' + hoverBg + ' !important;';
-                });
-                btn.addEventListener('mouseleave', function() {
-                    this.style.cssText += 'background-color: ' + originalBg + ' !important; border-color: ' + originalBg + ' !important;';
-                });
-            }
-        });
-        
-        // Also check all buttons more broadly
+        // Get ALL buttons on the page, not just primary ones
         var allButtons = document.querySelectorAll('button');
         allButtons.forEach(function(btn) {
             var text = (btn.textContent || btn.innerText || '').trim();
-            var parent = btn.closest('form') || btn.closest('[data-testid*="form"]');
+            
+            // Find the form parent to check context
+            var form = btn.closest('form');
+            var formParent = form || btn.closest('[data-testid*="stForm"]') || btn.closest('[data-testid*="form"]');
+            
+            // Check for textarea to identify form type
+            var textarea = formParent ? formParent.querySelector('textarea') : null;
+            var placeholder = textarea ? (textarea.getAttribute('placeholder') || '') : '';
+            
+            // Purple for Build Your Own Agent button
+            if (text.includes('Build Your Own Agent') || text.includes('🚀 Build Your Own Agent')) {
+                btn.style.setProperty('background-color', '#6b46c1', 'important');
+                btn.style.setProperty('border-color', '#6b46c1', 'important');
+                btn.style.setProperty('color', 'white', 'important');
+                var purpleHover = function() {
+                    this.style.setProperty('background-color', '#553c9a', 'important');
+                    this.style.setProperty('border-color', '#553c9a', 'important');
+                };
+                var purpleLeave = function() {
+                    this.style.setProperty('background-color', '#6b46c1', 'important');
+                    this.style.setProperty('border-color', '#6b46c1', 'important');
+                };
+                btn.removeEventListener('mouseenter', purpleHover);
+                btn.removeEventListener('mouseleave', purpleLeave);
+                btn.addEventListener('mouseenter', purpleHover);
+                btn.addEventListener('mouseleave', purpleLeave);
+            }
             
             // Purple for Create button in agent creation form
-            if (text === 'Create' || text.includes('Create')) {
-                // Check if it's in the agent creation form (not mission form)
-                var isAgentForm = parent && (parent.querySelector('textarea[placeholder*="agent"]') || parent.querySelector('textarea[placeholder*="Agent"]'));
-                if (isAgentForm || (parent && !parent.querySelector('textarea[placeholder*="mission"]') && !parent.querySelector('textarea[placeholder*="Mission"]'))) {
-                    btn.style.cssText += 'background-color: #6b46c1 !important; border-color: #6b46c1 !important; color: white !important;';
+            if (text === 'Create' || (text.includes('Create') && !text.includes('Mission'))) {
+                // Check if it's in an agent form (has "agent" in placeholder) or NOT in a mission form
+                var isAgentForm = placeholder && (placeholder.toLowerCase().includes('agent') || placeholder.toLowerCase().includes('description'));
+                var isMissionForm = placeholder && (placeholder.toLowerCase().includes('mission') || placeholder.toLowerCase().includes('Mission'));
+                
+                // Apply purple if it's an agent form OR if it's not explicitly a mission form
+                if (isAgentForm || (!isMissionForm && formParent)) {
+                    btn.style.setProperty('background-color', '#6b46c1', 'important');
+                    btn.style.setProperty('border-color', '#6b46c1', 'important');
+                    btn.style.setProperty('color', 'white', 'important');
+                    var purpleHover = function() {
+                        this.style.setProperty('background-color', '#553c9a', 'important');
+                        this.style.setProperty('border-color', '#553c9a', 'important');
+                    };
+                    var purpleLeave = function() {
+                        this.style.setProperty('background-color', '#6b46c1', 'important');
+                        this.style.setProperty('border-color', '#6b46c1', 'important');
+                    };
+                    btn.removeEventListener('mouseenter', purpleHover);
+                    btn.removeEventListener('mouseleave', purpleLeave);
+                    btn.addEventListener('mouseenter', purpleHover);
+                    btn.addEventListener('mouseleave', purpleLeave);
                 }
+            }
+            
+            // Dark green for Activate Mission button
+            if (text.includes('Activate Mission') || text.includes('🚀 Activate Mission')) {
+                btn.style.setProperty('background-color', '#059669', 'important');
+                btn.style.setProperty('border-color', '#059669', 'important');
+                btn.style.setProperty('color', 'white', 'important');
+                var greenHover = function() {
+                    this.style.setProperty('background-color', '#047857', 'important');
+                    this.style.setProperty('border-color', '#047857', 'important');
+                };
+                var greenLeave = function() {
+                    this.style.setProperty('background-color', '#059669', 'important');
+                    this.style.setProperty('border-color', '#059669', 'important');
+                };
+                btn.removeEventListener('mouseenter', greenHover);
+                btn.removeEventListener('mouseleave', greenLeave);
+                btn.addEventListener('mouseenter', greenHover);
+                btn.addEventListener('mouseleave', greenLeave);
             }
         });
     }
