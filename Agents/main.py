@@ -207,50 +207,53 @@ def main():
         
         # Agent description text input
         st.markdown("### Describe Your Agent")
-        agent_description = st.text_area(
-            "Enter a detailed description of the AI agent you want to build:",
-            placeholder="Example: An AI agent that helps users create marketing content for social media posts...",
-            height=150,
-            key="agent_description"
-        )
         
-        # Create button
-        if st.button("Create", type="primary", use_container_width=True):
-            if agent_description and agent_description.strip():
-                try:
-                    # Generate bot name and short description using OpenAI
-                    client = openai.OpenAI(api_key=OPENAI_API_KEY)
-                    response = client.chat.completions.create(
-                        model="gpt-4o-mini",
-                        messages=[
-                            {"role": "system", "content": "You are a helpful assistant that creates concise bot names and descriptions. Respond in JSON format with 'name' and 'description' fields. Name should be 2-4 words, description should be 1-2 sentences."},
-                            {"role": "user", "content": f"Based on this agent description, create a catchy name and a short description:\n\n{agent_description}"}
-                        ],
-                        response_format={"type": "json_object"},
-                        temperature=0.7
-                    )
-                    
-                    import json
-                    bot_data = json.loads(response.choices[0].message.content)
-                    bot_name = bot_data.get("name", "AI Agent")
-                    bot_desc = bot_data.get("description", agent_description[:100])
-                    
-                    # Add bot to session state
-                    bot_id = len(st.session_state.created_bots)
-                    st.session_state.created_bots.append({
-                        "id": bot_id,
-                        "name": bot_name,
-                        "description": bot_desc,
-                        "full_description": agent_description
-                    })
-                    
-                    # Clear the input
-                    st.session_state.agent_description = ""
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"Error creating bot: {str(e)}")
-            else:
-                st.warning("Please enter an agent description first.")
+        # Use form to handle submission and clear input
+        with st.form("agent_creation_form", clear_on_submit=True):
+            agent_description = st.text_area(
+                "Enter a detailed description of the AI agent you want to build:",
+                placeholder="Example: An AI agent that helps users create marketing content for social media posts...",
+                height=150,
+                key="agent_description_input"
+            )
+            
+            # Create button
+            submitted = st.form_submit_button("Create", type="primary", use_container_width=True)
+            
+            if submitted:
+                if agent_description and agent_description.strip():
+                    try:
+                        # Generate bot name and short description using OpenAI
+                        client = openai.OpenAI(api_key=OPENAI_API_KEY)
+                        response = client.chat.completions.create(
+                            model="gpt-4o-mini",
+                            messages=[
+                                {"role": "system", "content": "You are a helpful assistant that creates concise bot names and descriptions. Respond in JSON format with 'name' and 'description' fields. Name should be 2-4 words, description should be 1-2 sentences."},
+                                {"role": "user", "content": f"Based on this agent description, create a catchy name and a short description:\n\n{agent_description}"}
+                            ],
+                            response_format={"type": "json_object"},
+                            temperature=0.7
+                        )
+                        
+                        import json
+                        bot_data = json.loads(response.choices[0].message.content)
+                        bot_name = bot_data.get("name", "AI Agent")
+                        bot_desc = bot_data.get("description", agent_description[:100])
+                        
+                        # Add bot to session state
+                        bot_id = len(st.session_state.created_bots)
+                        st.session_state.created_bots.append({
+                            "id": bot_id,
+                            "name": bot_name,
+                            "description": bot_desc,
+                            "full_description": agent_description
+                        })
+                        
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"Error creating bot: {str(e)}")
+                else:
+                    st.warning("Please enter an agent description first.")
         
         # Display all created bots
         if st.session_state.created_bots:
