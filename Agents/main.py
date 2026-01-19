@@ -502,7 +502,25 @@ def main():
                 key="agent_description_input"
             )
             
-            # Create button
+            # Add inline CSS right before the Create button to ensure it's purple
+            st.markdown("""
+            <style>
+            /* Force purple on Create button in agent creation form */
+            form[data-testid*="agent_creation_form"] button[kind="primary"],
+            form[data-testid*="agent_creation_form"] > div:last-child button[kind="primary"] {
+                background-color: #6b46c1 !important;
+                border-color: #6b46c1 !important;
+                color: white !important;
+            }
+            form[data-testid*="agent_creation_form"] button[kind="primary"]:hover,
+            form[data-testid*="agent_creation_form"] > div:last-child button[kind="primary"]:hover {
+                background-color: #553c9a !important;
+                border-color: #553c9a !important;
+            }
+            </style>
+            """, unsafe_allow_html=True)
+            
+            # Create button (should be purple)
             submitted = st.form_submit_button("Create", type="primary", use_container_width=True)
             
             if submitted:
