@@ -180,6 +180,8 @@ def main():
         st.session_state.editing_bot = None
     if 'used_numbers' not in st.session_state:
         st.session_state.used_numbers = set()
+    if 'mission_story' not in st.session_state:
+        st.session_state.mission_story = ""
     
     if not st.session_state.show_agent_builder:
         st.markdown("## Welcome to Denken Labs")
