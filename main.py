@@ -233,11 +233,11 @@ def main():
                         response = client.chat.completions.create(
                             model="gpt-4o-mini",
                             messages=[
-                                {"role": "system", "content": "You are a creative assistant that creates AI agent profiles. Respond in JSON format with 'name', 'description', and 'character' fields. Name should be 2-4 words, description should be 1-2 sentences, and character should be an elaborate personality profile (3-5 sentences) describing the agent's traits, working style, expertise, and approach."},
-                                {"role": "user", "content": f"Based on this agent description, create a catchy name, short description, and elaborate character profile:\n\n{agent_description}"}
+                                {"role": "system", "content": "You are a creative assistant that creates AI agent profiles. Respond in JSON format with 'name', 'description', and 'character' fields. Name should be catchy, adventurous, and playful (2-4 words), description should be 1-2 sentences, and character should be an elaborate personality profile (3-5 sentences) describing the agent's traits, working style, expertise, and approach."},
+                                {"role": "user", "content": f"Based on this agent description, create a catchy, adventurous, and playful name, short description, and elaborate character profile:\n\n{agent_description}"}
                             ],
                             response_format={"type": "json_object"},
-                            temperature=0.8
+                            temperature=0.9
                         )
                         
                         import json
@@ -307,11 +307,11 @@ def main():
                                     response = client.chat.completions.create(
                                         model="gpt-4o-mini",
                                         messages=[
-                                            {"role": "system", "content": "You are a creative assistant that creates AI agent profiles. Respond in JSON format with 'name', 'description', and 'character' fields. Name should be 2-4 words, description should be 1-2 sentences, and character should be an elaborate personality profile (3-5 sentences) describing the agent's traits, working style, expertise, and approach."},
-                                            {"role": "user", "content": f"Based on this agent description, create a catchy name, short description, and elaborate character profile:\n\n{edited_description}"}
+                                            {"role": "system", "content": "You are a creative assistant that creates AI agent profiles. Respond in JSON format with 'name', 'description', and 'character' fields. Name should be catchy, adventurous, and playful (2-4 words), description should be 1-2 sentences, and character should be an elaborate personality profile (3-5 sentences) describing the agent's traits, working style, expertise, and approach."},
+                                            {"role": "user", "content": f"Based on this agent description, create a catchy, adventurous, and playful name, short description, and elaborate character profile:\n\n{edited_description}"}
                                         ],
                                         response_format={"type": "json_object"},
-                                        temperature=0.8
+                                        temperature=0.9
                                     )
                                     
                                     import json
