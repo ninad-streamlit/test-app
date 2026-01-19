@@ -1,7 +1,6 @@
 import streamlit as st
 import os
 from config import STREAMLIT_CONFIG, APP_VERSION
-from utils.auth import check_authentication, get_user_display_info, GoogleAuth
 
 def main():
     # Set page config with bot icon as favicon
@@ -41,13 +40,6 @@ def main():
     </style>
     """, unsafe_allow_html=True)
     
-    # Check authentication
-    if not check_authentication():
-        return
-    
-    # Get user info for display
-    user_info = get_user_display_info()
-    
     # Header - responsive
     col1, col2 = st.columns([4, 1])
     with col1:
@@ -71,11 +63,8 @@ def main():
             pass
     
     with col2:
-        st.markdown(f"👤 **{user_info['name']}**")
-        if st.button("🚪 Logout", help="Sign out of the application", use_container_width=True):
-            auth = GoogleAuth()
-            auth.logout()
-            return
+        # Empty column for layout consistency
+        pass
     
     st.markdown("---")
     
