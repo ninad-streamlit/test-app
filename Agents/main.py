@@ -228,8 +228,8 @@ def main():
             if submitted:
                 if agent_description and agent_description.strip():
                     try:
-                    # Generate bot name, description, and elaborate character using OpenAI
-                    client = openai.OpenAI(api_key=OPENAI_API_KEY)
+                        # Generate bot name, description, and elaborate character using OpenAI
+                        client = openai.OpenAI(api_key=OPENAI_API_KEY)
                     response = client.chat.completions.create(
                         model="gpt-4o-mini",
                         messages=[
