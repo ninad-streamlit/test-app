@@ -1082,7 +1082,23 @@ def main():
                             # Add title
                             if st.session_state.mission_story_title:
                                 story.append(Paragraph(st.session_state.mission_story_title, title_style))
-                                story.append(Spacer(1, 0.3*inch))
+                                story.append(Spacer(1, 0.2*inch))
+                                
+                                # Add author if available
+                                if st.session_state.get('user_creative_name'):
+                                    author_style = ParagraphStyle(
+                                        'Author',
+                                        parent=getSampleStyleSheet()['Normal'],
+                                        fontSize=12,
+                                        textColor='#475569',
+                                        spaceAfter=20,
+                                        alignment=TA_CENTER,
+                                        fontName='Helvetica-Oblique'
+                                    )
+                                    story.append(Paragraph(f"by {st.session_state.user_creative_name}", author_style))
+                                    story.append(Spacer(1, 0.2*inch))
+                                else:
+                                    story.append(Spacer(1, 0.2*inch))
                             
                             # Add story content (split by paragraphs)
                             story_paragraphs = st.session_state.mission_story.split('\n\n')
@@ -1168,7 +1184,19 @@ def main():
                             if st.session_state.mission_story_title:
                                 title = st.session_state.mission_story_title[:50]  # Limit title length
                                 pdf.cell(0, 10, title, ln=True, align='C')
-                                pdf.ln(10)
+                                pdf.ln(5)
+                                
+                                # Add author if available
+                                if st.session_state.get('user_creative_name'):
+                                    pdf.set_font("Arial", "I", 12)
+                                    pdf.set_text_color(71, 85, 105)  # Gray color #475569
+                                    author_text = f"by {st.session_state.user_creative_name}"
+                                    author_clean = author_text.encode('latin-1', 'replace').decode('latin-1')
+                                    pdf.cell(0, 8, author_clean, ln=True, align='C')
+                                    pdf.ln(8)
+                                    pdf.set_text_color(0, 0, 0)  # Reset to black
+                                else:
+                                    pdf.ln(5)
                             
                             # Story content
                             pdf.set_font("Arial", size=12)
