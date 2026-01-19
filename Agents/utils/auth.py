@@ -90,27 +90,11 @@ class GoogleAuth:
             'openid'
         ]
         
-        # Initialize the OAuth flow only if credentials are available
+        # Don't initialize Flow here - wait until get_authorization_url() 
+        # to ensure we have the correct redirect URI (especially for Streamlit Cloud)
+        # This prevents initializing with wrong redirect URI if detection fails
         self.flow = None
         self.flow_error = None
-        if self.client_id and self.client_secret:
-            try:
-                self.flow = Flow.from_client_config(
-                    {
-                        "web": {
-                            "client_id": self.client_id,
-                            "client_secret": self.client_secret,
-                            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-                            "token_uri": "https://oauth2.googleapis.com/token",
-                            "redirect_uris": [self.redirect_uri]
-                        }
-                    },
-                    scopes=self.scopes,
-                    redirect_uri=self.redirect_uri
-                )
-            except Exception as e:
-                # Store error for debugging - will be caught in get_authorization_url
-                self.flow_error = str(e)
 
     def get_authorization_url(self):
         """Get the Google OAuth authorization URL"""
@@ -118,49 +102,37 @@ class GoogleAuth:
             st.error("❌ Google OAuth credentials not configured. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables.")
             return None
         
-        # Ensure redirect URI is correct for local development (force port 8501)
-        # For Streamlit Cloud, use the configured redirect URI as-is
-        if 'localhost' in self.redirect_uri and ':8501' not in self.redirect_uri:
-            # Force port 8501 for local development only
-            self.redirect_uri = 'http://localhost:8501'
-            # Recreate flow with correct redirect URI
-            try:
-                self.flow = Flow.from_client_config(
-                    {
-                        "web": {
-                            "client_id": self.client_id,
-                            "client_secret": self.client_secret,
-                            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-                            "token_uri": "https://oauth2.googleapis.com/token",
-                            "redirect_uris": [self.redirect_uri]
-                        }
-                    },
-                    scopes=self.scopes,
-                    redirect_uri=self.redirect_uri
-                )
-            except Exception as e:
-                st.error(f"❌ Error creating OAuth flow: {e}")
-                return None
-        elif 'streamlit.app' in self.redirect_uri:
-            # For Streamlit Cloud, ensure we're using the correct redirect URI
-            # Recreate flow to ensure it matches what's in Google Cloud Console
-            try:
-                self.flow = Flow.from_client_config(
-                    {
-                        "web": {
-                            "client_id": self.client_id,
-                            "client_secret": self.client_secret,
-                            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-                            "token_uri": "https://oauth2.googleapis.com/token",
-                            "redirect_uris": [self.redirect_uri]
-                        }
-                    },
-                    scopes=self.scopes,
-                    redirect_uri=self.redirect_uri
-                )
-            except Exception as e:
-                st.error(f"❌ Error creating OAuth flow: {e}")
-                return None
+        # Always create Flow here with the correct redirect URI
+        # This ensures we use the right redirect URI even if detection failed in __init__
+        try:
+            # Double-check redirect URI is correct (especially for Streamlit Cloud)
+            # If we're on Streamlit Cloud but redirect_uri is localhost, something went wrong
+            if 'streamlit.app' in os.getenv('STREAMLIT_SERVER_URL', '') and 'localhost' in self.redirect_uri:
+                # We're on Streamlit Cloud but have localhost redirect - use the server URL
+                server_url = os.getenv('STREAMLIT_SERVER_URL', '')
+                if server_url:
+                    self.redirect_uri = server_url.rstrip('/')
+            
+            # Create Flow with the correct redirect URI
+            self.flow = Flow.from_client_config(
+                {
+                    "web": {
+                        "client_id": self.client_id,
+                        "client_secret": self.client_secret,
+                        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                        "token_uri": "https://oauth2.googleapis.com/token",
+                        "redirect_uris": [self.redirect_uri]
+                    }
+                },
+                scopes=self.scopes,
+                redirect_uri=self.redirect_uri
+            )
+        except Exception as e:
+            error_msg = f"❌ Error creating OAuth flow: {e}"
+            if hasattr(self, 'flow_error') and self.flow_error:
+                error_msg += f"\nPrevious error: {self.flow_error}"
+            st.error(error_msg)
+            return None
         
         if not self.flow:
             error_msg = "❌ OAuth flow not initialized. Check your credentials."
