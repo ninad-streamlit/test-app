@@ -855,19 +855,23 @@ def main():
             example_text = f"Examples: {', '.join(name_examples)}"
             st.markdown(f"**Enter your creative name!** *{example_text}*")
             
-            with st.form("user_name_form", clear_on_submit=True):
+            with st.form("user_name_form", clear_on_submit=False):
+                # Set default value to first example name
+                default_name = name_examples[0] if 'user_name_input' not in st.session_state else ""
                 user_creative_name = st.text_input(
                     "Enter your creative name:",
+                    value=default_name if not default_name or 'user_name_input' not in st.session_state else "",
                     placeholder=f"Example: {name_examples[0]}",
                     key="user_name_input"
                 )
                 name_submitted = st.form_submit_button("Continue", type="primary", use_container_width=True)
                 
                 if name_submitted:
-                    if user_creative_name and user_creative_name.strip():
-                        st.session_state.user_creative_name = user_creative_name.strip()
-                    else:
+                    # Use example name if nothing entered or only whitespace
+                    if not user_creative_name or not user_creative_name.strip():
                         st.session_state.user_creative_name = name_examples[0]
+                    else:
+                        st.session_state.user_creative_name = user_creative_name.strip()
                     st.rerun()
             return  # Stop here until user enters their name
         
