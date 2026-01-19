@@ -435,10 +435,43 @@ def main():
                 if activate_clicked:
                     if mission_description and mission_description.strip():
                         st.session_state.team_mission = mission_description
-                        st.success(f"✅ Mission activated! Your team of {len(st.session_state.created_bots)} agents is now working on: {mission_description[:100]}...")
+                        
+                        # Generate collaboration story
+                        try:
+                            # Get agent names and descriptions
+                            agent_list = []
+                            for bot in st.session_state.created_bots:
+                                agent_list.append(f"- {bot.get('name', 'Agent')} (#{bot.get('number', 'N/A')}): {bot.get('description', 'A helpful agent')}")
+                            
+                            agent_info = "\n".join(agent_list)
+                            
+                            client = openai.OpenAI(api_key=OPENAI_API_KEY)
+                            story_response = client.chat.completions.create(
+                                model="gpt-4o-mini",
+                                messages=[
+                                    {"role": "system", "content": "You are a creative children's storyteller. Write short, fun stories (2-3 short paragraphs) for children aged 5-10. Use simple language, make it engaging and positive. Stories should be about teamwork and friendship."},
+                                    {"role": "user", "content": f"Write a short, child-friendly story (2-3 paragraphs) about how these AI agents worked together to complete a mission:\n\nAgents:\n{agent_info}\n\nMission: {mission_description}\n\nStructure:\n1. First paragraph: Agents gather and plan together\n2. Second paragraph: They execute the mission (based on the mission description)\n3. Third paragraph: Agents compliment, thank, and appreciate each other's help\n\nMake it fun, positive, and suitable for ages 5-10!"}
+                                ],
+                                temperature=0.8
+                            )
+                            
+                            st.session_state.mission_story = story_response.choices[0].message.content
+                        except Exception as e:
+                            st.session_state.mission_story = f"Once upon a time, the agents worked together to complete the mission! They planned, executed, and thanked each other for their wonderful teamwork!"
+                        
                         st.rerun()
                     else:
                         st.warning("Please enter a mission description first.")
+            
+            # Display collaboration story if mission is activated
+            if st.session_state.team_mission and st.session_state.mission_story:
+                st.markdown("---")
+                st.markdown("### 📖 The Story of Teamwork")
+                st.markdown(f"""
+                <div style='background-color: #f0f8ff; padding: 20px; border-radius: 10px; border-left: 5px solid var(--primary-color);'>
+                    {st.session_state.mission_story.replace(chr(10), '<br>')}
+                </div>
+                """, unsafe_allow_html=True)
     
     st.markdown("</div>", unsafe_allow_html=True)
 
