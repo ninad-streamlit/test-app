@@ -193,6 +193,38 @@ def main():
     .stButton > button:hover {
         background-color: var(--primary-dark) !important;
     }
+    /* Purple for agent creation form submit button */
+    form[data-testid*="agent_creation_form"] button[kind="primary"],
+    form:has(textarea[placeholder*="agent"]) button[kind="primary"],
+    form:has(textarea[placeholder*="Agent"]) button[kind="primary"],
+    div[data-testid*="stForm"]:has(textarea[placeholder*="agent"]) button[kind="primary"],
+    div[data-testid*="stForm"]:has(textarea[placeholder*="Agent"]) button[kind="primary"] {
+        background-color: #6b46c1 !important;
+        border-color: #6b46c1 !important;
+        color: white !important;
+    }
+    form[data-testid*="agent_creation_form"] button[kind="primary"]:hover,
+    form:has(textarea[placeholder*="agent"]) button[kind="primary"]:hover,
+    form:has(textarea[placeholder*="Agent"]) button[kind="primary"]:hover {
+        background-color: #553c9a !important;
+        border-color: #553c9a !important;
+    }
+    /* Dark green for mission form submit button */
+    form[data-testid*="mission_form"] button[kind="primary"],
+    form:has(textarea[placeholder*="mission"]) button[kind="primary"],
+    form:has(textarea[placeholder*="Mission"]) button[kind="primary"],
+    div[data-testid*="stForm"]:has(textarea[placeholder*="mission"]) button[kind="primary"],
+    div[data-testid*="stForm"]:has(textarea[placeholder*="Mission"]) button[kind="primary"] {
+        background-color: #059669 !important;
+        border-color: #059669 !important;
+        color: white !important;
+    }
+    form[data-testid*="mission_form"] button[kind="primary"]:hover,
+    form:has(textarea[placeholder*="mission"]) button[kind="primary"]:hover,
+    form:has(textarea[placeholder*="Mission"]) button[kind="primary"]:hover {
+        background-color: #047857 !important;
+        border-color: #047857 !important;
+    }
     .stInfo {
         background-color: #dbeafe !important;
         border-left: 4px solid var(--primary-color) !important;
