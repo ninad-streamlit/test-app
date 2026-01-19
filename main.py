@@ -44,12 +44,26 @@ def main():
     col1, col2 = st.columns([4, 1])
     with col1:
         # Display logo above the title
-        logo_path = os.path.join(os.path.dirname(__file__), "agents", "Logo-DenkenLabs.png")
+        # Try multiple possible paths for the logo
+        logo_paths = [
+            os.path.join(os.path.dirname(__file__), "agents", "Logo-DenkenLabs.png"),
+            os.path.join(os.path.dirname(__file__), "Agents", "Logo-DenkenLabs.png"),
+            os.path.join(os.path.dirname(__file__), "Agents", "agents", "Logo-DenkenLabs.png"),
+        ]
+        logo_path = None
+        for path in logo_paths:
+            if os.path.exists(path):
+                logo_path = path
+                break
+        
         try:
-            if os.path.exists(logo_path):
+            if logo_path:
                 st.image(logo_path, width=250)
+            else:
+                # Debug: show which paths were checked
+                st.info(f"Logo not found. Checked: {logo_paths}")
         except Exception as e:
-            pass
+            st.error(f"Error loading logo: {e}")
         
         # Create a container with title and version on the same line
         st.markdown(f"""
