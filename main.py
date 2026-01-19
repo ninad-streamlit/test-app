@@ -231,8 +231,49 @@ def main():
     }
     </style>
     <script>
+    // ULTRA AGGRESSIVE button styling - intercept ALL style changes
+    function forcePurpleButton(btn) {
+        // Remove all existing styles and set our own
+        btn.style.removeProperty('background-color');
+        btn.style.removeProperty('background');
+        btn.style.removeProperty('border-color');
+        btn.style.removeProperty('border');
+        btn.style.cssText = 'background-color: #6b46c1 !important; border-color: #6b46c1 !important; color: white !important;';
+        btn.setAttribute('style', 'background-color: #6b46c1 !important; border-color: #6b46c1 !important; color: white !important;');
+        btn.setAttribute('data-button-color', 'purple');
+        
+        // Override any Streamlit classes
+        btn.classList.add('custom-purple-button');
+        
+        // Set hover handlers
+        btn.onmouseenter = function() {
+            this.style.cssText = 'background-color: #553c9a !important; border-color: #553c9a !important; color: white !important;';
+        };
+        btn.onmouseleave = function() {
+            this.style.cssText = 'background-color: #6b46c1 !important; border-color: #6b46c1 !important; color: white !important;';
+        };
+    }
+    
+    function forceGreenButton(btn) {
+        btn.style.removeProperty('background-color');
+        btn.style.removeProperty('background');
+        btn.style.removeProperty('border-color');
+        btn.style.removeProperty('border');
+        btn.style.cssText = 'background-color: #059669 !important; border-color: #059669 !important; color: white !important;';
+        btn.setAttribute('style', 'background-color: #059669 !important; border-color: #059669 !important; color: white !important;');
+        btn.setAttribute('data-button-color', 'green');
+        btn.classList.add('custom-green-button');
+        
+        btn.onmouseenter = function() {
+            this.style.cssText = 'background-color: #047857 !important; border-color: #047857 !important; color: white !important;';
+        };
+        btn.onmouseleave = function() {
+            this.style.cssText = 'background-color: #059669 !important; border-color: #059669 !important; color: white !important;';
+        };
+    }
+    
     function styleButtons() {
-        // Get ALL buttons on the page, not just primary ones
+        // Get ALL buttons on the page
         var allButtons = document.querySelectorAll('button');
         allButtons.forEach(function(btn) {
             var text = (btn.textContent || btn.innerText || '').trim();
@@ -247,116 +288,139 @@ def main():
             
             // Purple for Build Your Own Agent button
             if (text.includes('Build Your Own Agent') || text.includes('🚀 Build Your Own Agent')) {
-                // Force override with multiple methods
-                btn.style.cssText = btn.style.cssText + '; background-color: #6b46c1 !important; border-color: #6b46c1 !important; color: white !important;';
-                btn.setAttribute('style', (btn.getAttribute('style') || '') + ' background-color: #6b46c1 !important; border-color: #6b46c1 !important; color: white !important;');
-                var purpleHover = function(e) {
-                    e.target.style.cssText = e.target.style.cssText + '; background-color: #553c9a !important; border-color: #553c9a !important;';
-                };
-                var purpleLeave = function(e) {
-                    e.target.style.cssText = e.target.style.cssText + '; background-color: #6b46c1 !important; border-color: #6b46c1 !important;';
-                };
-                btn.addEventListener('mouseenter', purpleHover, true);
-                btn.addEventListener('mouseleave', purpleLeave, true);
+                forcePurpleButton(btn);
             }
             
-            // Purple for Create button - VERY AGGRESSIVE targeting
+            // Purple for Create button - target ALL Create buttons unless in mission form
             if (text === 'Create' || (text.includes('Create') && !text.includes('Mission') && !text.includes('Save'))) {
-                // Check if it's in an agent form (has "agent" in placeholder) or NOT in a mission form
-                var isAgentForm = placeholder && (placeholder.toLowerCase().includes('agent') || placeholder.toLowerCase().includes('description') || placeholder.toLowerCase().includes('example'));
                 var isMissionForm = placeholder && (placeholder.toLowerCase().includes('mission') || placeholder.toLowerCase().includes('Mission'));
                 
-                // Apply purple if it's an agent form OR if it's not explicitly a mission form
-                // Be more permissive - if it's Create and NOT in a mission form, make it purple
-                if (isAgentForm || (!isMissionForm && formParent)) {
-                    // Force override with multiple methods
-                    btn.style.cssText = btn.style.cssText + '; background-color: #6b46c1 !important; border-color: #6b46c1 !important; color: white !important;';
-                    btn.setAttribute('style', (btn.getAttribute('style') || '') + ' background-color: #6b46c1 !important; border-color: #6b46c1 !important; color: white !important;');
-                    // Also set as inline style directly
-                    btn.setAttribute('data-button-color', 'purple');
-                    var purpleHover = function(e) {
-                        e.target.style.cssText = e.target.style.cssText + '; background-color: #553c9a !important; border-color: #553c9a !important;';
-                    };
-                    var purpleLeave = function(e) {
-                        e.target.style.cssText = e.target.style.cssText + '; background-color: #6b46c1 !important; border-color: #6b46c1 !important;';
-                    };
-                    btn.addEventListener('mouseenter', purpleHover, true);
-                    btn.addEventListener('mouseleave', purpleLeave, true);
+                // If it's NOT a mission form, make it purple
+                if (!isMissionForm && formParent) {
+                    forcePurpleButton(btn);
                 }
             }
             
             // Dark green for Activate Mission button
             if (text.includes('Activate Mission') || text.includes('🚀 Activate Mission')) {
-                // Force override with multiple methods
-                btn.style.cssText = btn.style.cssText + '; background-color: #059669 !important; border-color: #059669 !important; color: white !important;';
-                btn.setAttribute('style', (btn.getAttribute('style') || '') + ' background-color: #059669 !important; border-color: #059669 !important; color: white !important;');
-                btn.setAttribute('data-button-color', 'green');
-                var greenHover = function(e) {
-                    e.target.style.cssText = e.target.style.cssText + '; background-color: #047857 !important; border-color: #047857 !important;';
-                };
-                var greenLeave = function(e) {
-                    e.target.style.cssText = e.target.style.cssText + '; background-color: #059669 !important; border-color: #059669 !important;';
-                };
-                btn.addEventListener('mouseenter', greenHover, true);
-                btn.addEventListener('mouseleave', greenLeave, true);
+                forceGreenButton(btn);
             }
         });
-        
-        // Also add CSS rules dynamically for buttons with data attributes
-        var style = document.createElement('style');
-        style.id = 'custom-button-styles';
-        style.textContent = `
-            button[data-button-color="purple"] {
-                background-color: #6b46c1 !important;
-                border-color: #6b46c1 !important;
-                color: white !important;
-            }
-            button[data-button-color="purple"]:hover {
-                background-color: #553c9a !important;
-                border-color: #553c9a !important;
-            }
-            button[data-button-color="green"] {
-                background-color: #059669 !important;
-                border-color: #059669 !important;
-                color: white !important;
-            }
-            button[data-button-color="green"]:hover {
-                background-color: #047857 !important;
-                border-color: #047857 !important;
-            }
-        `;
-        if (!document.getElementById('custom-button-styles')) {
-            document.head.appendChild(style);
-        }
     }
     
-    // Run immediately and on intervals
+    // Add global CSS that overrides everything
+    var globalStyle = document.createElement('style');
+    globalStyle.id = 'global-button-overrides';
+    globalStyle.textContent = `
+        button.custom-purple-button,
+        button[data-button-color="purple"],
+        form[data-testid*="agent_creation_form"] button[kind="primary"],
+        form:has(textarea[placeholder*="agent"]) button[kind="primary"],
+        form:has(textarea[placeholder*="Agent"]) button[kind="primary"],
+        form:has(textarea[placeholder*="description"]) button[kind="primary"],
+        form:has(textarea[placeholder*="Example"]) button[kind="primary"] {
+            background-color: #6b46c1 !important;
+            border-color: #6b46c1 !important;
+            color: white !important;
+        }
+        button.custom-purple-button:hover,
+        button[data-button-color="purple"]:hover {
+            background-color: #553c9a !important;
+            border-color: #553c9a !important;
+        }
+        button.custom-green-button,
+        button[data-button-color="green"],
+        form[data-testid*="mission_form"] button[kind="primary"],
+        form:has(textarea[placeholder*="mission"]) button[kind="primary"],
+        form:has(textarea[placeholder*="Mission"]) button[kind="primary"] {
+            background-color: #059669 !important;
+            border-color: #059669 !important;
+            color: white !important;
+        }
+        button.custom-green-button:hover,
+        button[data-button-color="green"]:hover {
+            background-color: #047857 !important;
+            border-color: #047857 !important;
+        }
+    `;
+    if (!document.getElementById('global-button-overrides')) {
+        document.head.appendChild(globalStyle);
+    }
+    
+    // Intercept style attribute changes using MutationObserver
+    var styleObserver = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                var btn = mutation.target;
+                var text = (btn.textContent || btn.innerText || '').trim();
+                if (text === 'Create' || text.includes('Create')) {
+                    var form = btn.closest('form');
+                    var textarea = form ? form.querySelector('textarea') : null;
+                    var placeholder = textarea ? (textarea.getAttribute('placeholder') || '') : '';
+                    var isMissionForm = placeholder && (placeholder.toLowerCase().includes('mission'));
+                    if (!isMissionForm) {
+                        forcePurpleButton(btn);
+                    }
+                }
+            }
+        });
+    });
+    
+    // Observe all buttons for style changes
+    document.querySelectorAll('button').forEach(function(btn) {
+        styleObserver.observe(btn, { attributes: true, attributeFilter: ['style', 'class'] });
+    });
+    
+    // Run immediately and continuously
     styleButtons();
-    setTimeout(styleButtons, 100);
+    setInterval(styleButtons, 100); // Run every 100ms
+    
+    // Also on specific events
+    setTimeout(styleButtons, 50);
+    setTimeout(styleButtons, 200);
     setTimeout(styleButtons, 500);
     setTimeout(styleButtons, 1000);
     
-    // Run after Streamlit reruns
-    window.addEventListener('load', styleButtons);
-    document.addEventListener('DOMContentLoaded', styleButtons);
+    window.addEventListener('load', function() {
+        styleButtons();
+        setInterval(styleButtons, 100);
+    });
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        styleButtons();
+        setInterval(styleButtons, 100);
+    });
     
     // Use MutationObserver to catch dynamically added buttons
     var observer = new MutationObserver(function(mutations) {
-        var shouldStyle = false;
         mutations.forEach(function(mutation) {
-            if (mutation.addedNodes.length > 0) {
-                shouldStyle = true;
-            }
+            mutation.addedNodes.forEach(function(node) {
+                if (node.nodeType === 1) { // Element node
+                    if (node.tagName === 'BUTTON') {
+                        styleButtons();
+                        styleObserver.observe(node, { attributes: true, attributeFilter: ['style', 'class'] });
+                    } else if (node.querySelectorAll) {
+                        var buttons = node.querySelectorAll('button');
+                        buttons.forEach(function(btn) {
+                            styleButtons();
+                            styleObserver.observe(btn, { attributes: true, attributeFilter: ['style', 'class'] });
+                        });
+                    }
+                }
+            });
         });
-        if (shouldStyle) {
-            setTimeout(styleButtons, 100);
-        }
+        styleButtons();
     });
     observer.observe(document.body, { childList: true, subtree: true });
     
-    // Also listen for Streamlit's custom events
+    // Listen for Streamlit's custom events
     window.addEventListener('streamlit:rerun', function() {
-        setTimeout(styleButtons, 300);
+        setTimeout(function() {
+            styleButtons();
+            document.querySelectorAll('button').forEach(function(btn) {
+                styleObserver.observe(btn, { attributes: true, attributeFilter: ['style', 'class'] });
+            });
+        }, 100);
     });
     </script>
     """, unsafe_allow_html=True)
