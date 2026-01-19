@@ -257,6 +257,15 @@ class GoogleAuth:
         st.markdown("**For Enterprise scale software development**")
         st.markdown("---")
         
+        # Debug info (ALWAYS visible - remove in production)
+        with st.expander("🔍 Debug Info - OAuth Configuration", expanded=True):
+            st.write(f"**Client ID configured:** {bool(self.client_id)}")
+            st.write(f"**Client Secret configured:** {bool(self.client_secret)}")
+            st.write(f"**Redirect URI:** `{self.redirect_uri}`")
+            st.write("")
+            st.write("**⚠️ IMPORTANT:** Make sure this redirect URI matches EXACTLY in Google Cloud Console!")
+            st.write("Go to: APIs & Services → Credentials → Your OAuth Client → Authorized redirect URIs")
+        
         st.markdown("""
         ### Welcome to the AI Agent System
         
@@ -291,13 +300,6 @@ class GoogleAuth:
                 st.write(f"Client Secret configured: {bool(self.client_secret)}")
                 st.write(f"Redirect URI: {self.redirect_uri}")
             return False
-        
-        # Debug info (temporary - remove in production)
-        with st.expander("🔍 Debug Info (Click to verify configuration)"):
-            st.write(f"✅ Client ID configured: {bool(self.client_id)}")
-            st.write(f"✅ Client Secret configured: {bool(self.client_secret)}")
-            st.write(f"📍 Redirect URI: `{self.redirect_uri}`")
-            st.write(f"🔗 Make sure this redirect URI matches exactly in Google Cloud Console!")
         
         # Create login button
         try:
