@@ -285,6 +285,11 @@ class GoogleAuth:
         Please log in with your Google account to access the system.
         """)
         
+        st.warning("""
+        ⚠️ **Important:** Make sure you're signed into `ninad123@gmail.com` in your browser, or sign out of all Google accounts before clicking Login.
+        If you get a 403 error, it means the Google account you're currently signed into is not authorized.
+        """)
+        
         # Check if credentials are configured
         if not self.client_id or not self.client_secret:
             st.error("""
