@@ -596,14 +596,27 @@ def main():
         color: #ffffff !important;
     }
     
-    /* Specifically target the agent description intro text in dark mode */
+    /* Specifically target descriptive/intro text in dark mode - make them light gray (not pure white) */
     [data-theme="dark"] .agent-description-intro,
     [data-theme="dark"] .agent-description-intro *,
     [data-theme="dark"] .agent-description-intro strong,
     [data-theme="dark"] .agent-description-intro p,
-    [data-theme="dark"] .agent-description-intro span {
-        color: #ffffff !important; /* Pure white for maximum visibility */
-        font-weight: 600 !important;
+    [data-theme="dark"] .agent-description-intro span,
+    [data-theme="dark"] .tagline-text,
+    [data-theme="dark"] .tagline-text *,
+    [data-theme="dark"] .tagline-text strong,
+    [data-theme="dark"] .tagline-text span,
+    [data-theme="dark"] .creative-name-intro,
+    [data-theme="dark"] .creative-name-intro *,
+    [data-theme="dark"] .creative-name-intro strong,
+    [data-theme="dark"] .creative-name-intro span,
+    [data-theme="dark"] .creative-name-intro em,
+    [data-theme="dark"] .welcome-message,
+    [data-theme="dark"] .welcome-message *,
+    [data-theme="dark"] .welcome-message strong,
+    [data-theme="dark"] .welcome-message span {
+        color: #e2e8f0 !important; /* Light gray - lighter than default but not pure white */
+        font-weight: 500 !important;
     }
     
     /* Override any Streamlit default dark mode text colors */
