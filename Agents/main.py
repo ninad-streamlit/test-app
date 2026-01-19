@@ -171,8 +171,23 @@ def main():
         config['page_icon'] = "🤖"  # Fallback to emoji if image not found
     st.set_page_config(**config)
     
+    # Add favicon link to HTML head for better control
+    if logo_path:
+        st.markdown(f"""
+        <link rel="icon" type="image/png" href="{logo_path}">
+        <link rel="shortcut icon" type="image/png" href="{logo_path}">
+        <link rel="apple-touch-icon" href="{logo_path}">
+        """, unsafe_allow_html=True)
+    
     # Mobile-responsive CSS with minimal spacing and logo-matching colors
     st.markdown("""
+    <style>
+    /* Favicon styling - try to make it appear larger in browser */
+    link[rel="icon"],
+    link[rel="shortcut icon"] {
+        size: 64px !important;
+    }
+    </style>
     <style>
     :root {
         --primary-color: #2563eb;
