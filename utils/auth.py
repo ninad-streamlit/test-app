@@ -378,26 +378,35 @@ class GoogleAuth:
 
 def check_authentication():
     """Check if user is authenticated, redirect to login if not"""
+    # DEBUG: Always show this to verify function is called
+    st.info("🔍 DEBUG: check_authentication() called")
+    
     # Initialize session state to prevent refresh logout
     initialize_session()
     
     # Check if this is an OAuth callback
     if 'code' in st.query_params and 'state' in st.query_params:
-        auth = GoogleAuth()
-        code = st.query_params['code']
-        state = st.query_params['state']
-        
-        if auth.handle_callback(code, state):
-            st.success("✅ Successfully authenticated!")
-            # Persist authentication state
-            persist_auth_state()
-            # Clear the query parameters to prevent reprocessing
-            st.query_params.clear()
-            st.rerun()
-        else:
-            st.error("❌ Authentication failed. Please try again.")
-            # Clear the query parameters to prevent reprocessing
-            st.query_params.clear()
+        try:
+            auth = GoogleAuth()
+            code = st.query_params['code']
+            state = st.query_params['state']
+            
+            if auth.handle_callback(code, state):
+                st.success("✅ Successfully authenticated!")
+                # Persist authentication state
+                persist_auth_state()
+                # Clear the query parameters to prevent reprocessing
+                st.query_params.clear()
+                st.rerun()
+            else:
+                st.error("❌ Authentication failed. Please try again.")
+                # Clear the query parameters to prevent reprocessing
+                st.query_params.clear()
+                return False
+        except Exception as e:
+            st.error(f"❌ Error in OAuth callback: {e}")
+            import traceback
+            st.code(traceback.format_exc())
             return False
     
     # Check for persistent authentication first
@@ -412,9 +421,17 @@ def check_authentication():
     )
     
     if not is_authenticated:
-        auth = GoogleAuth()
-        auth.create_login_ui()
-        return False
+        try:
+            st.info("🔍 DEBUG: Creating GoogleAuth() object...")
+            auth = GoogleAuth()
+            st.info("🔍 DEBUG: GoogleAuth() created successfully, calling create_login_ui()...")
+            auth.create_login_ui()
+            return False
+        except Exception as e:
+            st.error(f"❌ Error creating GoogleAuth or login UI: {e}")
+            import traceback
+            st.code(traceback.format_exc())
+            return False
     return True
 
 def get_user_display_info():
