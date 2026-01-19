@@ -591,7 +591,7 @@ def main():
     
     if not st.session_state.show_agent_builder:
         st.markdown("## Welcome to Denken Labs")
-        st.markdown("**Build your own AI agent eco-system with ease**")
+        st.markdown("**Get ready for an exiting mission**")
         
         # Build your own agent button - compact (purple)
         st.markdown("""
