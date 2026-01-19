@@ -25,17 +25,22 @@ class GoogleAuth:
         # Try to get from Streamlit secrets (for Streamlit Cloud)
         try:
             if hasattr(st, 'secrets'):
-                # Try direct access first (Streamlit Cloud format)
+                from streamlit.runtime.secrets import StreamlitSecretNotFoundError
                 try:
+                    # Try direct access first (Streamlit Cloud format)
                     self.client_id = st.secrets['GOOGLE_CLIENT_ID']
                     self.client_secret = st.secrets['GOOGLE_CLIENT_SECRET']
                     configured_redirect_uri = st.secrets['GOOGLE_REDIRECT_URI']
-                except (KeyError, AttributeError):
-                    # Try .get() method as fallback
-                    self.client_id = st.secrets.get('GOOGLE_CLIENT_ID', None)
-                    self.client_secret = st.secrets.get('GOOGLE_CLIENT_SECRET', None)
-                    configured_redirect_uri = st.secrets.get('GOOGLE_REDIRECT_URI', None)
-        except (AttributeError, KeyError, TypeError):
+                except (StreamlitSecretNotFoundError, KeyError, AttributeError):
+                    # Secrets file not found (local dev) or key missing - try .get() method
+                    try:
+                        self.client_id = st.secrets.get('GOOGLE_CLIENT_ID', None)
+                        self.client_secret = st.secrets.get('GOOGLE_CLIENT_SECRET', None)
+                        configured_redirect_uri = st.secrets.get('GOOGLE_REDIRECT_URI', None)
+                    except (StreamlitSecretNotFoundError, AttributeError, TypeError):
+                        # Secrets not available at all
+                        pass
+        except (AttributeError, KeyError, TypeError, ImportError):
             pass
         
         # Fall back to environment variables if secrets not found (for local development)

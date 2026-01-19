@@ -2,18 +2,29 @@ import os
 from dotenv import load_dotenv
 
 # Version number - increment by 0.1 for each code change
-APP_VERSION = "1.0"
+APP_VERSION = "1.2"
 
 # Load environment variables (for local development)
 load_dotenv()
 
 # OpenAI Configuration
 # Try Streamlit secrets first (for Streamlit Cloud), then fall back to environment variables (for local)
+OPENAI_API_KEY = None
 try:
     import streamlit as st
-    OPENAI_API_KEY = st.secrets.get("OPENAI_API_KEY") or os.getenv("OPENAI_API_KEY")
-except (AttributeError, KeyError, ImportError):
-    # If st.secrets is not available or key doesn't exist, use environment variables
+    from streamlit.runtime.secrets import StreamlitSecretNotFoundError
+    try:
+        # Try to access secrets (works on Streamlit Cloud)
+        OPENAI_API_KEY = st.secrets.get("OPENAI_API_KEY")
+    except (StreamlitSecretNotFoundError, AttributeError, KeyError, TypeError):
+        # Secrets file not found (local development) or not accessible
+        pass
+except (ImportError, AttributeError):
+    # Streamlit not available or StreamlitSecretNotFoundError not found
+    pass
+
+# Fall back to environment variables if secrets not found
+if not OPENAI_API_KEY:
     OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 if not OPENAI_API_KEY:
