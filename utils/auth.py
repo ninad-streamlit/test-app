@@ -399,42 +399,7 @@ class GoogleAuth:
                 </div>
                 """, unsafe_allow_html=True)
         except Exception as e:
-            error_msg = str(e)
-            st.error(f"❌ Error generating login URL: {error_msg}")
-            import traceback
-            with st.expander("🔍 DEBUG: Full Error Details"):
-                st.code(traceback.format_exc())
-            
-            # Provide specific guidance based on error type
-            if "redirect_uri" in error_msg.lower() or "redirect" in error_msg.lower():
-                st.error("""
-                **Redirect URI Mismatch Error**
-                
-                This usually means:
-                1. The redirect URI in your `.env` file doesn't match what's in Google Cloud Console
-                2. The redirect URI in Google Cloud Console is missing or incorrect
-                
-                **To fix:**
-                1. Check your current URL (look at the address bar)
-                2. Update `GOOGLE_REDIRECT_URI` in your `.env` file to match your current port
-                3. Go to [Google Cloud Console](https://console.cloud.google.com/) → APIs & Services → Credentials
-                4. Click on your OAuth 2.0 Client ID
-                5. Under "Authorized redirect URIs", add: `{self.redirect_uri}`
-                6. Save and try again
-                """.format(self=self))
-            else:
-                st.error("Please check your Google OAuth configuration in your `.env` file.")
-                st.info(f"**Current redirect URI:** `{self.redirect_uri}`")
-        
-        # Add some styling and information
-        st.markdown("---")
-        st.info("""
-        🔒 **Security Note:** 
-        - Your Google account information is only used for authentication
-        - We only access your basic profile information (name, email)
-        - No data is stored permanently on our servers
-        - You can revoke access anytime from your Google account settings
-        """)
+            st.error(f"❌ Error: {str(e)}")
 
 def check_authentication():
     """Check if user is authenticated, redirect to login if not"""
