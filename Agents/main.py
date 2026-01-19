@@ -33,19 +33,21 @@ def main():
     }
     .header-container {
         display: flex;
-        align-items: center;
+        align-items: flex-start;
+        justify-content: flex-end;
         gap: 12px;
         margin-bottom: -0.3rem !important;
         margin-top: 0 !important;
     }
     .logo-container {
         flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.2rem;
     }
     .title-version-container {
-        flex: 1;
-        display: flex;
-        justify-content: flex-end;
-        align-items: center;
+        display: none;
     }
     hr {
         margin-top: -0.5rem !important;
@@ -138,7 +140,7 @@ def main():
             logo_path = path
             break
     
-    # Create compact header layout with logo on the left
+    # Create compact header layout with logo above version on the right
     st.markdown("""
     <div class="header-container">
         <div class="logo-container">
@@ -154,10 +156,7 @@ def main():
         st.error(f"Error loading logo: {e}")
     
     st.markdown(f"""
-        </div>
-        <div class="title-version-container">
-            <div></div>
-            <h2 style="color: var(--primary-color); margin: 0; font-size: 1.1rem; font-weight: 400;">v{APP_VERSION}</h2>
+            <h2 style="color: var(--primary-color); margin: 0; font-size: 1.1rem; font-weight: 400; text-align: right;">v{APP_VERSION}</h2>
         </div>
     </div>
     """, unsafe_allow_html=True)
