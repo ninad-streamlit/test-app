@@ -481,6 +481,9 @@ def main():
                             st.session_state.mission_story_title = "The Amazing Team Adventure"
                             st.session_state.mission_story = f"Once upon a time, the agents worked together to complete the mission! They planned, executed, and thanked each other for their wonderful teamwork!"
                         
+                        # Regenerate mission example for next mission
+                        st.session_state.mission_example = generate_mission_example()
+                        
                         st.rerun()
                     else:
                         st.warning("Please enter a mission description first.")
@@ -489,13 +492,115 @@ def main():
             if st.session_state.team_mission and st.session_state.mission_story:
                 st.markdown("---")
                 st.markdown("### 📖 The Story of Teamwork")
-                # Display story title
-                if st.session_state.mission_story_title:
-                    st.markdown(f"""
-                    <div style='text-align: center; font-size: 1.5rem; font-weight: bold; color: var(--primary-color); margin-bottom: 15px;'>
-                        {st.session_state.mission_story_title}
-                    </div>
-                    """, unsafe_allow_html=True)
+                
+                # PDF download button
+                col_title, col_pdf = st.columns([3, 1])
+                with col_title:
+                    # Display story title
+                    if st.session_state.mission_story_title:
+                        st.markdown(f"""
+                        <div style='text-align: center; font-size: 1.5rem; font-weight: bold; color: var(--primary-color); margin-bottom: 15px;'>
+                            {st.session_state.mission_story_title}
+                        </div>
+                        """, unsafe_allow_html=True)
+                with col_pdf:
+                    st.markdown("<br>", unsafe_allow_html=True)  # Spacing
+                    if REPORTLAB_AVAILABLE:
+                        try:
+                            # Generate PDF
+                            buffer = BytesIO()
+                            doc = SimpleDocTemplate(buffer, pagesize=letter)
+                            story = []
+                            
+                            # Title style
+                            title_style = ParagraphStyle(
+                                'CustomTitle',
+                                parent=getSampleStyleSheet()['Heading1'],
+                                fontSize=18,
+                                textColor='#2563eb',
+                                spaceAfter=30,
+                                alignment=TA_CENTER
+                            )
+                            
+                            # Body style
+                            body_style = ParagraphStyle(
+                                'CustomBody',
+                                parent=getSampleStyleSheet()['Normal'],
+                                fontSize=12,
+                                leading=18,
+                                spaceAfter=12,
+                                leftIndent=0,
+                                rightIndent=0
+                            )
+                            
+                            # Add title
+                            if st.session_state.mission_story_title:
+                                story.append(Paragraph(st.session_state.mission_story_title, title_style))
+                                story.append(Spacer(1, 0.3*inch))
+                            
+                            # Add story content (split by paragraphs)
+                            story_paragraphs = st.session_state.mission_story.split('\n\n')
+                            for para in story_paragraphs:
+                                if para.strip():
+                                    # Replace newlines within paragraphs with <br/>
+                                    para_html = para.replace('\n', '<br/>')
+                                    story.append(Paragraph(para_html, body_style))
+                                    story.append(Spacer(1, 0.2*inch))
+                            
+                            # Build PDF
+                            doc.build(story)
+                            buffer.seek(0)
+                            
+                            # Download button
+                            st.download_button(
+                                label="📄 Download PDF",
+                                data=buffer.getvalue(),
+                                file_name=f"{st.session_state.mission_story_title.replace(' ', '_')}.pdf",
+                                mime="application/pdf",
+                                use_container_width=True
+                            )
+                        except Exception as e:
+                            st.error(f"Error generating PDF: {str(e)}")
+                    else:
+                        # Fallback if reportlab not available - create simple text-based PDF
+                        try:
+                            from fpdf import FPDF
+                            
+                            pdf = FPDF()
+                            pdf.set_auto_page_break(auto=True, margin=15)
+                            pdf.add_page()
+                            
+                            # Title
+                            pdf.set_font("Arial", "B", 16)
+                            if st.session_state.mission_story_title:
+                                pdf.cell(0, 10, st.session_state.mission_story_title, ln=True, align='C')
+                                pdf.ln(10)
+                            
+                            # Story content
+                            pdf.set_font("Arial", size=12)
+                            story_text = st.session_state.mission_story.replace('\n\n', '\n')
+                            for line in story_text.split('\n'):
+                                if line.strip():
+                                    pdf.multi_cell(0, 8, line.strip(), align='L')
+                                    pdf.ln(3)
+                            
+                            buffer = BytesIO()
+                            pdf_bytes = pdf.output(dest='S')
+                            buffer.write(pdf_bytes.encode('latin-1'))
+                            buffer.seek(0)
+                            
+                            st.download_button(
+                                label="📄 Download PDF",
+                                data=buffer.getvalue(),
+                                file_name=f"{st.session_state.mission_story_title.replace(' ', '_')}.pdf",
+                                mime="application/pdf",
+                                use_container_width=True
+                            )
+                        except ImportError:
+                            st.info("PDF generation libraries not available. Install 'reportlab' or 'fpdf2' for PDF download.")
+                        except Exception as e:
+                            st.error(f"Error generating PDF: {str(e)}")
+                
                 # Display story content
                 st.markdown(f"""
                 <div style='background-color: #f0f8ff; padding: 20px; border-radius: 10px; border-left: 5px solid var(--primary-color);'>
