@@ -962,6 +962,85 @@ def main():
                     placeholder=f"Example: {name_examples[0]}",
                     key="user_name_input"
                 )
+                
+                # Add CSS and JavaScript for name input styling and behavior
+                st.markdown(f"""
+                <style>
+                /* Style the default value text to be lighter (gray) */
+                input[data-testid*="user_name_input"],
+                input[key*="user_name_input"] {{
+                    color: #666666 !important; /* Lighter gray for example text */
+                }}
+                /* When user types, text becomes normal color */
+                input[data-testid*="user_name_input"]:focus,
+                input[key*="user_name_input"]:focus {{
+                    color: #1e293b !important; /* Dark text when editing */
+                }}
+                /* Override if user has changed the value */
+                input[data-testid*="user_name_input"][value*="Example:"] {{
+                    color: #999999 !important; /* Very light gray for example */
+                }}
+                </style>
+                <script>
+                (function() {{
+                    // Wait for the input to be rendered
+                    function setupNameInput() {{
+                        const input = document.querySelector('input[data-testid*="user_name_input"], input[key*="user_name_input"]');
+                        if (!input) {{
+                            setTimeout(setupNameInput, 100);
+                            return;
+                        }}
+                        
+                        // Set cursor position to beginning
+                        input.addEventListener('focus', function(e) {{
+                            setTimeout(function() {{
+                                e.target.setSelectionRange(0, 0);
+                            }}, 0);
+                        }}, true);
+                        
+                        // Force cursor to beginning when clicked anywhere
+                        input.addEventListener('click', function(e) {{
+                            setTimeout(function() {{
+                                e.target.setSelectionRange(0, 0);
+                            }}, 0);
+                        }}, true);
+                        
+                        // Prevent Enter key from submitting form
+                        input.addEventListener('keydown', function(e) {{
+                            if (e.key === 'Enter' || e.keyCode === 13) {{
+                                e.preventDefault();
+                                e.stopPropagation();
+                                return false;
+                            }}
+                        }}, true);
+                        
+                        // Style text color based on value
+                        function updateTextColor() {{
+                            if (input.value && input.value.startsWith('Example: ')) {{
+                                input.style.color = '#999999'; // Very light gray for example
+                            }} else if (input.value.trim()) {{
+                                input.style.color = '#1e293b'; // Dark text for user input
+                            }} else {{
+                                input.style.color = '#999999'; // Light gray if empty
+                            }}
+                        }}
+                        
+                        input.addEventListener('input', updateTextColor);
+                        input.addEventListener('change', updateTextColor);
+                        updateTextColor(); // Initial check
+                        
+                        // Set cursor to beginning initially
+                        setTimeout(function() {{
+                            input.focus();
+                            input.setSelectionRange(0, 0);
+                            input.blur(); // Remove focus so it doesn't interfere
+                        }}, 200);
+                    }}
+                    setupNameInput();
+                }})();
+                </script>
+                """, unsafe_allow_html=True)
+                
                 name_submitted = st.form_submit_button("Continue", type="primary", use_container_width=True)
                 
                 if name_submitted:
