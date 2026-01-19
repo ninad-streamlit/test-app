@@ -476,6 +476,40 @@ def main():
     }
     </style>
     <style>
+    /* Force light mode / white background as default */
+    .stApp {
+        background-color: #ffffff !important;
+    }
+    .main .block-container {
+        background-color: #ffffff !important;
+    }
+    
+    /* Override Streamlit dark mode if enabled */
+    [data-theme="dark"] {
+        background-color: #ffffff !important;
+    }
+    [data-theme="dark"] .stApp {
+        background-color: #ffffff !important;
+    }
+    [data-theme="dark"] .main .block-container {
+        background-color: #ffffff !important;
+    }
+    
+    /* If dark mode is somehow active, make text lighter/readable */
+    [data-theme="dark"] .stMarkdown,
+    [data-theme="dark"] .stMarkdown p,
+    [data-theme="dark"] .stMarkdown strong,
+    [data-theme="dark"] .stMarkdown h1,
+    [data-theme="dark"] .stMarkdown h2,
+    [data-theme="dark"] .stMarkdown h3,
+    [data-theme="dark"] .stText,
+    [data-theme="dark"] .stTextInput > div > div > input,
+    [data-theme="dark"] .stTextArea > div > div > textarea,
+    [data-theme="dark"] .stExpander,
+    [data-theme="dark"] .stExpander label {
+        color: #1e293b !important;
+    }
+    
     :root {
         --primary-color: #2563eb;
         --primary-dark: #1e40af;
@@ -493,7 +527,7 @@ def main():
     .main .block-container {
         padding-top: 0.2rem !important;
         padding-bottom: 0.5rem !important;
-        background-color: var(--background);
+        background-color: var(--background) !important;
     }
     .header-container {
         display: flex;
