@@ -305,32 +305,7 @@ class GoogleAuth:
         
         # Create login button
         try:
-            # Show OAuth configuration for debugging
-            client_id_preview = self.client_id[:20] + "..." if self.client_id and len(self.client_id) > 20 else (self.client_id or "Not set")
-            scopes_str = ", ".join(self.scopes)
-            
-            with st.expander("🔍 OAuth Configuration Debug Info", expanded=True):
-                st.write(f"**Client ID:** `{client_id_preview}`")
-                st.write(f"**Redirect URI:** `{self.redirect_uri}`")
-                st.write(f"**Scopes being requested:**")
-                for scope in self.scopes:
-                    st.write(f"  - `{scope}`")
-                st.write("\n⚠️ **If you're getting a 403 error, check:**")
-                st.write("1. ✅ **Redirect URI:** Make sure `http://localhost:8501` is EXACTLY in Google Cloud Console → Credentials → Authorized redirect URIs")
-                st.write("2. ✅ **Test Users:** Go to OAuth consent screen → Test users → Add your email (`ninad123@gmail.com`)")
-                st.write("3. ✅ **Scopes:** Go to OAuth consent screen → Scopes → Make sure these scopes are added:")
-                for scope in self.scopes:
-                    st.write(f"   - `{scope}`")
-                st.write("4. ✅ **App Status:** OAuth consent screen should be in 'Testing' mode (or 'In production')")
-                st.write("5. ✅ **APIs Enabled:** Go to APIs & Services → Library → Enable 'People API' or 'Google+ API'")
-                st.write("\n💡 **Most common cause of 403:** Your email is not in the Test users list!")
-            
             auth_url = self.get_authorization_url()
-            
-            if auth_url:
-                # Show the authorization URL for debugging (truncated for security)
-                with st.expander("🔗 Full Authorization URL (for debugging)", expanded=False):
-                    st.code(auth_url, language=None)
             
             if auth_url:
                 st.markdown(f"""
@@ -370,16 +345,7 @@ def check_authentication():
     # Check for OAuth errors in query params (Google redirects with error parameter)
     if 'error' in st.query_params:
         error = st.query_params.get('error', 'Unknown error')
-        error_description = st.query_params.get('error_description', 'No description provided')
-        st.error(f"❌ **OAuth Error from Google:**\n\n**Error:** `{error}`\n\n**Description:** `{error_description}`")
-        
-        if error == 'access_denied':
-            st.info("💡 **This usually means:**\n- Your email is not in the Test users list\n- The app is in Testing mode and you're not authorized\n- You clicked 'Cancel' on the consent screen")
-        elif error == 'redirect_uri_mismatch':
-            st.info("💡 **This means the redirect URI doesn't match.** Check that `https://agentbuilder.streamlit.app` is exactly in your Google Cloud Console authorized redirect URIs.")
-        elif error == 'invalid_client':
-            st.info("💡 **This means the Client ID or Client Secret is incorrect.** Verify your credentials in Streamlit Cloud secrets.")
-        
+        st.error(f"❌ Authentication error: {error}")
         # Clear error params to prevent showing again on refresh
         st.query_params.clear()
         return False
