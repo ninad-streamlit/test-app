@@ -209,10 +209,12 @@ def main():
             key="agent_description"
         )
         
-        # Back button
-        if st.button("← Back", use_container_width=False):
-            st.session_state.show_agent_builder = False
-            st.rerun()
+        # Create button
+        if st.button("Create", type="primary", use_container_width=True):
+            if agent_description:
+                st.success(f"Agent created! Description: {agent_description}")
+            else:
+                st.warning("Please enter an agent description first.")
     
     st.markdown("</div>", unsafe_allow_html=True)
 
