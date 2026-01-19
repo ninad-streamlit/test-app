@@ -646,9 +646,11 @@ def main():
         else:
             st.info("🤖 Bot logo")
         
-        # Agent description text input
-        st.markdown("### Describe Your Agent")
-        st.markdown("**Create individual AI agents with specific capabilities and personalities. When you have 2 or more agents, they form a team and can be assigned missions to work together.**")
+        # Creative Name section
+        st.markdown("### ✨ Creative Name")
+        name_examples = generate_creative_name_examples()
+        example_text = f"Examples: {', '.join(name_examples)}"
+        st.markdown(f"**Give your agent any name you like!** *{example_text}*")
         
         # Use form to handle submission and clear input
         # Generate example if not exists (will be regenerated after agent creation)
@@ -656,6 +658,19 @@ def main():
             st.session_state.agent_example = generate_agent_example()
         
         with st.form("agent_creation_form", clear_on_submit=True):
+            # Creative Name input
+            creative_name = st.text_input(
+                "Enter a creative name for your agent:",
+                placeholder=f"Example: {name_examples[0]}",
+                key="creative_name_input"
+            )
+            
+            st.markdown("<br>", unsafe_allow_html=True)
+            
+            # Agent description text input
+            st.markdown("### Describe Your Agent")
+            st.markdown("**Create individual AI agents with specific capabilities and personalities. When you have 2 or more agents, they form a team and can be assigned missions to work together.**")
+            
             agent_description = st.text_area(
                 "Enter a detailed description of the AI agent you want to build:",
                 placeholder=f"Example: {st.session_state.agent_example}",
