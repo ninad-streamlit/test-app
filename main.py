@@ -480,7 +480,7 @@ def main():
     }
     </style>
     <style>
-    /* Allow dark mode but ensure text is light/readable when dark mode is selected */
+    /* Allow dark mode but ensure text is very light/bright for readability */
     [data-theme="dark"] .stMarkdown,
     [data-theme="dark"] .stMarkdown p,
     [data-theme="dark"] .stMarkdown strong,
@@ -488,42 +488,66 @@ def main():
     [data-theme="dark"] .stMarkdown h2,
     [data-theme="dark"] .stMarkdown h3,
     [data-theme="dark"] .stMarkdown h4,
+    [data-theme="dark"] .stMarkdown h5,
+    [data-theme="dark"] .stMarkdown h6,
     [data-theme="dark"] .stMarkdown li,
     [data-theme="dark"] .stMarkdown span,
+    [data-theme="dark"] .stMarkdown a,
+    [data-theme="dark"] .stMarkdown div,
     [data-theme="dark"] .stText,
     [data-theme="dark"] .stTextInput > div > div > input,
     [data-theme="dark"] .stTextArea > div > div > textarea,
     [data-theme="dark"] .stExpander,
     [data-theme="dark"] .stExpander label,
     [data-theme="dark"] .stExpander .stMarkdown,
+    [data-theme="dark"] .stExpander .stMarkdown p,
     [data-theme="dark"] .stInfo,
     [data-theme="dark"] .stInfo .stMarkdown,
     [data-theme="dark"] .stSuccess .stMarkdown,
     [data-theme="dark"] .stWarning .stMarkdown,
-    [data-theme="dark"] .stError .stMarkdown {
-        color: #f8fafc !important; /* Light gray/white text for readability */
+    [data-theme="dark"] .stError .stMarkdown,
+    [data-theme="dark"] .stSelectbox label,
+    [data-theme="dark"] .stSelectbox > div > div,
+    [data-theme="dark"] .stCheckbox label,
+    [data-theme="dark"] .stRadio label {
+        color: #ffffff !important; /* Pure white text for maximum readability */
     }
     
-    /* Ensure headings are also light in dark mode */
+    /* Ensure headings are bright white in dark mode */
     [data-theme="dark"] h1,
     [data-theme="dark"] h2,
     [data-theme="dark"] h3,
     [data-theme="dark"] h4,
     [data-theme="dark"] h5,
     [data-theme="dark"] h6 {
-        color: #f8fafc !important;
+        color: #ffffff !important; /* Pure white for headings */
     }
     
-    /* Make input placeholders readable in dark mode */
+    /* Make input placeholders readable but distinguishable in dark mode */
     [data-theme="dark"] input::placeholder,
     [data-theme="dark"] textarea::placeholder {
-        color: #94a3b8 !important; /* Lighter placeholder text */
-        opacity: 0.8;
+        color: #cbd5e1 !important; /* Light gray placeholder text */
+        opacity: 0.9;
     }
     
-    /* Ensure buttons have readable text in dark mode */
+    /* Ensure input text is white when typing in dark mode */
+    [data-theme="dark"] input[type="text"],
+    [data-theme="dark"] input[type="text"]:focus,
+    [data-theme="dark"] textarea,
+    [data-theme="dark"] textarea:focus {
+        color: #ffffff !important; /* White text in inputs */
+    }
+    
+    /* Ensure buttons have bright readable text in dark mode */
     [data-theme="dark"] .stButton > button {
         color: white !important;
+    }
+    
+    /* Make sure custom styled elements are also bright */
+    [data-theme="dark"] .main-content,
+    [data-theme="dark"] .header-container,
+    [data-theme="dark"] .logo-container {
+        color: #ffffff !important;
     }
     
     :root {
