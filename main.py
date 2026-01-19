@@ -596,6 +596,16 @@ def main():
         color: #ffffff !important;
     }
     
+    /* Specifically target the agent description intro text in dark mode */
+    [data-theme="dark"] .agent-description-intro,
+    [data-theme="dark"] .agent-description-intro *,
+    [data-theme="dark"] .agent-description-intro strong,
+    [data-theme="dark"] .agent-description-intro p,
+    [data-theme="dark"] .agent-description-intro span {
+        color: #ffffff !important; /* Pure white for maximum visibility */
+        font-weight: 600 !important;
+    }
+    
     /* Override any Streamlit default dark mode text colors */
     [data-theme="dark"] p,
     [data-theme="dark"] span,
