@@ -45,7 +45,7 @@ def main():
             font-size: 1.5rem !important;
         }
         .logo-image {
-            width: 150px !important;
+            width: 180px !important;
             max-width: 100% !important;
         }
         .main-content {
@@ -81,7 +81,7 @@ def main():
     
     try:
         if logo_path:
-            st.image(logo_path, width=120)
+            st.image(logo_path, width=200)
         else:
             # Debug: show which paths were checked
             st.info(f"Logo not found. Checked: {logo_paths}")
