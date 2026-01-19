@@ -18,14 +18,32 @@ class GoogleAuth:
     def __init__(self):
         # Google OAuth configuration
         # Try Streamlit secrets first (for Streamlit Cloud), then fall back to environment variables (for local)
+        self.client_id = None
+        self.client_secret = None
+        configured_redirect_uri = None
+        
+        # Try to get from Streamlit secrets (for Streamlit Cloud)
         try:
-            self.client_id = st.secrets.get('GOOGLE_CLIENT_ID') or os.getenv('GOOGLE_CLIENT_ID')
-            self.client_secret = st.secrets.get('GOOGLE_CLIENT_SECRET') or os.getenv('GOOGLE_CLIENT_SECRET')
-            configured_redirect_uri = st.secrets.get('GOOGLE_REDIRECT_URI') or os.getenv('GOOGLE_REDIRECT_URI')
-        except (AttributeError, KeyError):
-            # If st.secrets is not available or key doesn't exist, use environment variables
+            if hasattr(st, 'secrets'):
+                # Try direct access first (Streamlit Cloud format)
+                try:
+                    self.client_id = st.secrets['GOOGLE_CLIENT_ID']
+                    self.client_secret = st.secrets['GOOGLE_CLIENT_SECRET']
+                    configured_redirect_uri = st.secrets['GOOGLE_REDIRECT_URI']
+                except (KeyError, AttributeError):
+                    # Try .get() method as fallback
+                    self.client_id = st.secrets.get('GOOGLE_CLIENT_ID', None)
+                    self.client_secret = st.secrets.get('GOOGLE_CLIENT_SECRET', None)
+                    configured_redirect_uri = st.secrets.get('GOOGLE_REDIRECT_URI', None)
+        except (AttributeError, KeyError, TypeError):
+            pass
+        
+        # Fall back to environment variables if secrets not found (for local development)
+        if not self.client_id:
             self.client_id = os.getenv('GOOGLE_CLIENT_ID')
+        if not self.client_secret:
             self.client_secret = os.getenv('GOOGLE_CLIENT_SECRET')
+        if not configured_redirect_uri:
             configured_redirect_uri = os.getenv('GOOGLE_REDIRECT_URI')
         
         # Default to 8501 if not found
@@ -35,8 +53,21 @@ class GoogleAuth:
         if configured_redirect_uri:
             self.redirect_uri = configured_redirect_uri
         else:
-            # Default to common ports - user should configure this in .env or Streamlit secrets
-            self.redirect_uri = f'http://localhost:{default_port}'
+            # Try to detect Streamlit Cloud URL from query params or environment
+            # For Streamlit Cloud, the redirect URI should be the app URL
+            try:
+                # Check if we're on Streamlit Cloud
+                if 'streamlit.app' in os.getenv('STREAMLIT_SERVER_URL', ''):
+                    # Extract the app URL from environment
+                    server_url = os.getenv('STREAMLIT_SERVER_URL', '')
+                    if server_url:
+                        self.redirect_uri = server_url.rstrip('/')
+                else:
+                    # Default to common ports for local development
+                    self.redirect_uri = f'http://localhost:{default_port}'
+            except:
+                # Default to common ports - user should configure this in .env or Streamlit secrets
+                self.redirect_uri = f'http://localhost:{default_port}'
         
         self.scopes = [
             'https://www.googleapis.com/auth/userinfo.email',
