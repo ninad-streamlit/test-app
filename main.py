@@ -169,12 +169,51 @@ def main():
     <div class="main-content" style='text-align: center;'>
     """, unsafe_allow_html=True)
     
-    st.markdown("## Welcome to Denken Labs")
-    st.markdown("**Build your own AI agent eco-system with ease**")
+    # Initialize session state
+    if 'show_agent_builder' not in st.session_state:
+        st.session_state.show_agent_builder = False
     
-    # Build your own agent button - compact
-    if st.button("🚀 Build Your Own Agent", type="primary", use_container_width=True):
-        st.info("🚀 Agent builder coming soon!")
+    if not st.session_state.show_agent_builder:
+        st.markdown("## Welcome to Denken Labs")
+        st.markdown("**Build your own AI agent eco-system with ease**")
+        
+        # Build your own agent button - compact
+        if st.button("🚀 Build Your Own Agent", type="primary", use_container_width=True):
+            st.session_state.show_agent_builder = True
+            st.rerun()
+    else:
+        # Show bot logo and agent description input
+        # Find bot.png file
+        bot_paths = [
+            os.path.join(os.path.dirname(__file__), "bot.png"),
+            os.path.join(os.path.dirname(__file__), "Agents", "bot.png"),
+            os.path.join(os.path.dirname(__file__), "..", "bot.png"),
+        ]
+        bot_path = None
+        for path in bot_paths:
+            if os.path.exists(path):
+                bot_path = path
+                break
+        
+        # Display bot logo
+        if bot_path:
+            st.image(bot_path, width=200)
+        else:
+            st.info("🤖 Bot logo")
+        
+        # Agent description text input
+        st.markdown("### Describe Your Agent")
+        agent_description = st.text_area(
+            "Enter a detailed description of the AI agent you want to build:",
+            placeholder="Example: An AI agent that helps users create marketing content for social media posts...",
+            height=150,
+            key="agent_description"
+        )
+        
+        # Back button
+        if st.button("← Back", use_container_width=False):
+            st.session_state.show_agent_builder = False
+            st.rerun()
     
     st.markdown("</div>", unsafe_allow_html=True)
 
