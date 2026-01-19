@@ -178,6 +178,20 @@ class GoogleAuth:
         
         # IMPORTANT: Make sure redirect_uri matches EXACTLY what's in Google Cloud Console
         try:
+            # Log the redirect URI being used (for debugging 403 errors)
+            # This will help verify it matches Google Cloud Console
+            import urllib.parse
+            auth_url_params = {
+                'access_type': 'offline',
+                'state': state,
+                'prompt': 'select_account',
+                'include_granted_scopes': 'true',
+                'redirect_uri': self.redirect_uri,
+                'response_type': 'code',
+                'client_id': self.client_id,
+                'scope': ' '.join(self.scopes)
+            }
+            
             # Use a simpler prompt to avoid potential issues
             # 'select_account' shows account picker, 'consent' forces consent screen
             authorization_url, _ = self.flow.authorization_url(
@@ -186,6 +200,16 @@ class GoogleAuth:
                 prompt='select_account',  # Show account selection screen first
                 include_granted_scopes='true'
             )
+            
+            # Verify redirect_uri is in the URL
+            parsed_url = urllib.parse.urlparse(authorization_url)
+            query_params = urllib.parse.parse_qs(parsed_url.query)
+            actual_redirect_uri = query_params.get('redirect_uri', [None])[0]
+            
+            # If redirect URI doesn't match, log it
+            if actual_redirect_uri and actual_redirect_uri != self.redirect_uri:
+                st.warning(f"⚠️ Redirect URI mismatch! Expected: `{self.redirect_uri}`, Got: `{actual_redirect_uri}`")
+            
             return authorization_url
         except Exception as e:
             st.error(f"❌ Error creating authorization URL: {e}")
