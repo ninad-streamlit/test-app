@@ -201,10 +201,14 @@ class GoogleAuth:
                 include_granted_scopes='true'
             )
             
-            # Verify redirect_uri is in the URL
+            # Verify redirect_uri is in the URL and show it for debugging
             parsed_url = urllib.parse.urlparse(authorization_url)
             query_params = urllib.parse.parse_qs(parsed_url.query)
             actual_redirect_uri = query_params.get('redirect_uri', [None])[0]
+            
+            # Show the actual redirect URI being sent to Google (for debugging 403 errors)
+            if 'streamlit.app' in self.redirect_uri:
+                st.error(f"🔍 **Debug Info:**\n\n**Redirect URI being sent to Google:** `{actual_redirect_uri}`\n\n**Expected redirect URI:** `{self.redirect_uri}`\n\n⚠️ **Make sure this EXACT redirect URI is in Google Cloud Console → Credentials → Authorized redirect URIs**")
             
             # If redirect URI doesn't match, log it
             if actual_redirect_uri and actual_redirect_uri != self.redirect_uri:
