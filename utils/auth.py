@@ -376,6 +376,23 @@ def check_authentication():
     # Initialize session state to prevent refresh logout
     initialize_session()
     
+    # Check for OAuth errors in query params (Google redirects with error parameter)
+    if 'error' in st.query_params:
+        error = st.query_params.get('error', 'Unknown error')
+        error_description = st.query_params.get('error_description', 'No description provided')
+        st.error(f"❌ **OAuth Error from Google:**\n\n**Error:** `{error}`\n\n**Description:** `{error_description}`")
+        
+        if error == 'access_denied':
+            st.info("💡 **This usually means:**\n- Your email is not in the Test users list\n- The app is in Testing mode and you're not authorized\n- You clicked 'Cancel' on the consent screen")
+        elif error == 'redirect_uri_mismatch':
+            st.info("💡 **This means the redirect URI doesn't match.** Check that `https://agentbuilder.streamlit.app` is exactly in your Google Cloud Console authorized redirect URIs.")
+        elif error == 'invalid_client':
+            st.info("💡 **This means the Client ID or Client Secret is incorrect.** Verify your credentials in Streamlit Cloud secrets.")
+        
+        # Clear error params to prevent showing again on refresh
+        st.query_params.clear()
+        return False
+    
     # Check if this is an OAuth callback
     if 'code' in st.query_params and 'state' in st.query_params:
         try:
