@@ -640,12 +640,6 @@ def main():
                 bot_path = path
                 break
         
-        # Display bot logo
-        if bot_path:
-            st.image(bot_path, width=100)
-        else:
-            st.info("🤖 Bot logo")
-        
         # User's Creative Name section (first time only)
         if 'user_creative_name' not in st.session_state or not st.session_state.user_creative_name:
             st.markdown("### ✨ Your Creative Name")
@@ -675,6 +669,12 @@ def main():
             if st.button("Change Name", key="change_name_btn"):
                 st.session_state.user_creative_name = ""
                 st.rerun()
+        
+        # Display bot logo (only when creating agents)
+        if bot_path:
+            st.image(bot_path, width=100)
+        else:
+            st.info("🤖 Bot logo")
         
         # Agent description text input
         st.markdown("### Describe Your Agent")
