@@ -280,6 +280,9 @@ def main():
                             "full_description": agent_description
                         })
                         
+                        # Regenerate example for next agent creation
+                        st.session_state.agent_example = generate_agent_example()
+                        
                         st.rerun()
                     except Exception as e:
                         st.error(f"Error creating bot: {str(e)}")
