@@ -2,6 +2,93 @@ import streamlit as st
 import os
 import openai
 from config import STREAMLIT_CONFIG, APP_VERSION, OPENAI_API_KEY
+import random # Added for unique bot numbers
+import json # Added for OpenAI response parsing
+from io import BytesIO
+try:
+    from reportlab.lib.pagesizes import letter
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import inch
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+    from reportlab.lib.enums import TA_CENTER
+    REPORTLAB_AVAILABLE = True
+except ImportError:
+    REPORTLAB_AVAILABLE = False
+
+def generate_agent_example():
+    """Generate a short random agent description example (around 10 words) with personalities"""
+    personalities = [
+        "calm", "strong", "fast", "big", "gentle", "smart", "playful", "wise",
+        "creative", "bold", "kind", "clever", "brave", "cheerful", "thoughtful", "energetic"
+    ]
+    activities = [
+        "homework helper", "puzzle solver", "story teller", "picture drawer",
+        "explorer", "protector", "teacher", "game creator", "friend", "helper"
+    ]
+    special_traits = [
+        "patient", "imaginative", "courageous", "understanding", "funny", "curious",
+        "caring", "determined", "artistic", "adventurous"
+    ]
+    
+    personality = random.choice(personalities)
+    activity = random.choice(activities)
+    trait = random.choice(special_traits)
+    
+    # Generate short examples (around 10 words)
+    examples = [
+        f"A {personality} {activity} who is {trait} and loves helping others.",
+        f"An agent who is {personality} and {trait}, specializing in {activity}.",
+        f"A {personality}, {trait} helper that loves {activity} and making friends.",
+        f"An {personality} agent who is {trait} and enjoys {activity} with friends.",
+        f"A {trait} and {personality} {activity} who brings joy to everyone."
+    ]
+    
+    return random.choice(examples)
+
+def generate_mission_example():
+    """Generate a random mission example suitable for 7-year-olds (around 20 words)"""
+    scenarios = [
+        "find a hidden treasure in a magical forest",
+        "rescue lost animals and return them to their homes",
+        "organize a fun birthday party with games and treats",
+        "discover a secret garden full of colorful flowers",
+        "help build a treehouse for woodland creatures",
+        "solve the mystery of the missing rainbow colors",
+        "plan a perfect picnic adventure in the park",
+        "create a storybook filled with amazing adventures",
+        "design a playground for all the neighborhood kids",
+        "help organize a community talent show",
+        "find and return a magical key to unlock happy dreams",
+        "discover friendly aliens and help them learn about Earth"
+    ]
+    activities = [
+        "solving clues and helping friendly animals along the way",
+        "meeting new friends and working together as a team",
+        "using creativity and imagination to make everything special",
+        "exploring new places and discovering exciting secrets",
+        "learning valuable lessons about friendship and cooperation",
+        "overcoming challenges with teamwork and determination"
+    ]
+    additional_details = [
+        "Make sure everyone has fun and works together happily",
+        "Remember to be kind and helpful to everyone you meet",
+        "Share your ideas and listen to others with respect",
+        "Celebrate your achievements and thank your teammates",
+        "Have lots of fun while completing the mission together"
+    ]
+    
+    scenario = random.choice(scenarios)
+    activity = random.choice(activities)
+    detail = random.choice(additional_details)
+    
+    # Generate ~20 word examples
+    examples = [
+        f"Go on an adventure to {scenario}, {activity}. {detail}",
+        f"Your mission is to {scenario}. {activity}. {detail}",
+        f"Work together to {scenario} by {activity}. {detail}"
+    ]
+    
+    return random.choice(examples)
 
 def main():
     # Set page config with logo as favicon
