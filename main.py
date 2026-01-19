@@ -1197,11 +1197,11 @@ def main():
                                 answer_response = client.chat.completions.create(
                                     model="gpt-4o-mini",
                                     messages=[
-                                        {"role": "system", "content": "You are a helpful teacher explaining children's stories to kids aged 5-10. Answer questions in a simple, friendly way using very simple words. Keep answers short (2-3 sentences). Make it fun and easy to understand."},
-                                        {"role": "user", "content": f"Story Title: {st.session_state.mission_story_title}\n\nStory:\n{st.session_state.mission_story}\n\nQuestion: {user_question}\n\nAnswer this question in a simple, child-friendly way (2-3 short sentences)."}
+                                        {"role": "system", "content": "You are a creative storyteller and teacher explaining children's stories to kids aged 5-10. Answer questions in a simple, friendly way using very simple words. IMPORTANT: You are NOT limited to just the story content. Be creative and build upon the story with additional details, background, character motivations, and fun nuances that enhance the story. Expand on the story world while staying consistent with what was told. Keep answers engaging and imaginative (2-4 sentences). Make it fun and easy to understand."},
+                                        {"role": "user", "content": f"Story Title: {st.session_state.mission_story_title}\n\nStory:\n{st.session_state.mission_story}\n\nQuestion: {user_question}\n\nAnswer this question creatively, building upon and expanding the story with additional details and nuances. You can add background information, character motivations, fun facts, or imaginative details that enhance the story world. Keep it simple and child-friendly (2-4 short sentences)."}
                                     ],
-                                    temperature=0.7,
-                                    max_tokens=150
+                                    temperature=0.9,  # Higher temperature for more creativity
+                                    max_tokens=200  # Increased to allow for more detailed, creative answers
                                 )
                                 answer = answer_response.choices[0].message.content.strip()
                                 
