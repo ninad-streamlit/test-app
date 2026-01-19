@@ -588,6 +588,10 @@ def main():
             submitted = st.form_submit_button("Create", type="primary", use_container_width=True)
             
             if submitted:
+                # Use example if description is blank
+                if not agent_description or not agent_description.strip():
+                    agent_description = st.session_state.agent_example
+                
                 if agent_description and agent_description.strip():
                     try:
                         # Generate bot name, description, and elaborate character using OpenAI
