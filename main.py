@@ -34,20 +34,21 @@ def main():
     .header-container {
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        gap: 12px;
+        width: 100%;
         margin-bottom: 2px !important;
         margin-top: 0 !important;
     }
     .logo-container {
         flex-shrink: 0;
         margin-left: auto;
+        margin-right: 0;
     }
     .title-version-container {
         display: flex;
         justify-content: flex-start;
         align-items: center;
         flex-shrink: 0;
+        margin-right: auto;
     }
     hr {
         margin-top: 0.5rem !important;
