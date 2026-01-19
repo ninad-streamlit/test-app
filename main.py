@@ -242,6 +242,10 @@ def main():
     var observer = new MutationObserver(styleButtons);
     observer.observe(document.body, { childList: true, subtree: true });
     </script>
+    """, unsafe_allow_html=True)
+    
+    # Additional CSS for mobile responsiveness
+    st.markdown("""
     <style>
     @media (max-width: 768px) {
         .header-container {
