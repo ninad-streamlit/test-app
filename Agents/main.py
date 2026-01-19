@@ -945,6 +945,11 @@ def main():
                                     
                                     st.session_state.mission_story_title = retry_title
                                     st.session_state.mission_story = retry_story
+                                    
+                                    # Clear Q&A history for the new mission
+                                    st.session_state.story_qa_history = []
+                                    st.session_state.story_question_example = ""
+                                    
                                     st.success("Story generated successfully!")
                                 else:
                                     raise ValueError("Retry story generation also failed")
