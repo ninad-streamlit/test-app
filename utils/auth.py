@@ -96,7 +96,7 @@ class GoogleAuth:
                 # Log error but don't fail here - will be caught in get_authorization_url
                 pass
 
-    def get_authorization_url(self, login_hint_email=None):
+    def get_authorization_url(self):
         """Get the Google OAuth authorization URL"""
         if not self.client_id or not self.client_secret:
             st.error("❌ Google OAuth credentials not configured. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables.")
@@ -113,20 +113,13 @@ class GoogleAuth:
         # Also store it in a more persistent way
         st.session_state['oauth_state_backup'] = state
         
-        # Build authorization URL parameters
-        auth_params = {
-            'access_type': 'offline',
-            'state': state,
-            'prompt': 'consent select_account'  # Show account selection screen
-        }
-        
-        # Only add login_hint if email is provided
-        if login_hint_email and '@' in login_hint_email:
-            auth_params['login_hint'] = login_hint_email
-        
         # IMPORTANT: Make sure redirect_uri matches EXACTLY what's in Google Cloud Console
         try:
-            authorization_url, _ = self.flow.authorization_url(**auth_params)
+            authorization_url, _ = self.flow.authorization_url(
+                access_type='offline',
+                state=state,
+                prompt='consent select_account'  # Show account selection screen
+            )
             return authorization_url
         except Exception as e:
             st.error(f"❌ Error creating authorization URL: {e}")
