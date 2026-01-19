@@ -115,7 +115,7 @@ def main():
     st.markdown(f"""
         </div>
         <div class="title-version-container">
-            <h1 style="margin: 0; font-size: 1.8rem;">Denken Labs</h1>
+            <div></div>
             <h2 style="color: #1f77b4; margin: 0; font-size: 1.1rem; font-weight: 400;">v{APP_VERSION}</h2>
         </div>
     </div>
