@@ -184,6 +184,10 @@ def main():
         st.session_state.mission_story = ""
     if 'mission_story_title' not in st.session_state:
         st.session_state.mission_story_title = ""
+    if 'agent_example' not in st.session_state:
+        st.session_state.agent_example = generate_agent_example()
+    if 'mission_example' not in st.session_state:
+        st.session_state.mission_example = generate_mission_example()
     
     if not st.session_state.show_agent_builder:
         st.markdown("## Welcome to Denken Labs")
@@ -218,10 +222,15 @@ def main():
         st.markdown("**Create individual AI agents with specific capabilities and personalities. When you have 2 or more agents, they form a team and can be assigned missions to work together.**")
         
         # Use form to handle submission and clear input
+        # Regenerate example on each view to show variety
+        if 'agent_example' not in st.session_state or st.session_state.get('refresh_agent_example', False):
+            st.session_state.agent_example = generate_agent_example()
+            st.session_state.refresh_agent_example = False
+        
         with st.form("agent_creation_form", clear_on_submit=True):
             agent_description = st.text_area(
                 "Enter a detailed description of the AI agent you want to build:",
-                placeholder="Example: A calm and thoughtful agent who loves helping with homework, solving puzzles, and answering questions with patience and kindness.",
+                placeholder=f"Example: {st.session_state.agent_example}",
                 height=150,
                 key="agent_description_input"
             )
@@ -423,10 +432,15 @@ def main():
             if 'team_mission' not in st.session_state:
                 st.session_state.team_mission = ""
             
+            # Regenerate mission example on each view to show variety
+            if 'mission_example' not in st.session_state or st.session_state.get('refresh_mission_example', False):
+                st.session_state.mission_example = generate_mission_example()
+                st.session_state.refresh_mission_example = False
+            
             with st.form("mission_form", clear_on_submit=False):
                 mission_description = st.text_area(
                     "Describe the mission for your team:",
-                    placeholder="Example: Go on an adventure to find a hidden treasure in a magical forest, solving clues and helping friendly animals along the way!",
+                    placeholder=f"Example: {st.session_state.mission_example}",
                     height=150,
                     value=st.session_state.team_mission,
                     key="mission_description_input"
