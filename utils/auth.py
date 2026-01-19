@@ -103,12 +103,13 @@ class GoogleAuth:
         # Also store it in a more persistent way
         st.session_state['oauth_state_backup'] = state
         
-        # Don't pass redirect_uri again since it's already set in the flow
+        # Force account selection and consent to ensure user can choose the right account
         authorization_url, _ = self.flow.authorization_url(
             access_type='offline',
             include_granted_scopes='true',
             state=state,
-            prompt='consent select_account'  # Force both consent and account selection screens
+            prompt='consent select_account',  # Force both consent and account selection screens
+            login_hint='ninad123@gmail.com'  # Hint which account to use
         )
         return authorization_url
 
