@@ -327,12 +327,31 @@ class GoogleAuth:
         
         # Create login button
         try:
+            st.info("🔍 DEBUG: Calling get_authorization_url()...")
             auth_url = self.get_authorization_url()
+            st.info(f"🔍 DEBUG: get_authorization_url() returned: {auth_url is not None}")
+            
             if auth_url:
-                # DEBUG: Show the full authorization URL
-                with st.expander("🔍 DEBUG: Full Authorization URL (Click to see what's being sent to Google)", expanded=False):
+                # DEBUG: Show the full authorization URL - ALWAYS show this
+                with st.expander("🔍 DEBUG: Full Authorization URL (REQUIRED - Click to see what's being sent to Google)", expanded=True):
                     st.code(auth_url, language=None)
-                    st.write("**Check if redirect_uri parameter matches exactly:** `https://agentbuilder.streamlit.app`")
+                    # Parse and show the redirect_uri parameter
+                    try:
+                        from urllib.parse import urlparse, parse_qs
+                        parsed = urlparse(auth_url)
+                        params = parse_qs(parsed.query)
+                        redirect_uri_param = params.get('redirect_uri', [None])[0]
+                        if redirect_uri_param:
+                            st.write(f"**Redirect URI in URL:** `{redirect_uri_param}`")
+                            st.write(f"**Expected:** `https://agentbuilder.streamlit.app`")
+                            if redirect_uri_param != "https://agentbuilder.streamlit.app":
+                                st.error(f"❌ MISMATCH! The redirect_uri in the URL doesn't match!")
+                            else:
+                                st.success("✅ Redirect URI matches!")
+                        else:
+                            st.warning("⚠️ No redirect_uri parameter found in URL")
+                    except Exception as e:
+                        st.error(f"Error parsing URL: {e}")
                 
                 st.markdown(f"""
                 <div style="text-align: center; margin: 20px 0;">
@@ -363,6 +382,9 @@ class GoogleAuth:
         except Exception as e:
             error_msg = str(e)
             st.error(f"❌ Error generating login URL: {error_msg}")
+            import traceback
+            with st.expander("🔍 DEBUG: Full Error Details"):
+                st.code(traceback.format_exc())
             
             # Provide specific guidance based on error type
             if "redirect_uri" in error_msg.lower() or "redirect" in error_msg.lower():
