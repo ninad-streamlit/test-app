@@ -176,6 +176,10 @@ def main():
         st.session_state.created_bots = []
     if 'delete_confirm' not in st.session_state:
         st.session_state.delete_confirm = {}
+    if 'editing_bot' not in st.session_state:
+        st.session_state.editing_bot = None
+    if 'used_numbers' not in st.session_state:
+        st.session_state.used_numbers = set()
     
     if not st.session_state.show_agent_builder:
         st.markdown("## Welcome to Denken Labs")
@@ -240,10 +244,19 @@ def main():
                         bot_name = bot_data.get("name", "AI Agent")
                         bot_desc = bot_data.get("description", agent_description[:100])
                         
+                        # Generate unique 3-digit number
+                        import random
+                        while True:
+                            bot_number = random.randint(100, 999)
+                            if bot_number not in st.session_state.used_numbers:
+                                st.session_state.used_numbers.add(bot_number)
+                                break
+                        
                         # Add bot to session state
                         bot_id = len(st.session_state.created_bots)
                         st.session_state.created_bots.append({
                             "id": bot_id,
+                            "number": bot_number,
                             "name": bot_name,
                             "description": bot_desc,
                             "full_description": agent_description
@@ -262,39 +275,105 @@ def main():
             
             for bot in st.session_state.created_bots:
                 with st.container():
-                    col1, col2, col3 = st.columns([1, 8, 1])
+                    # Check if this bot is being edited
+                    is_editing = st.session_state.editing_bot == bot['id']
                     
-                    with col1:
-                        if bot_path:
-                            st.image(bot_path, width=80)
-                        else:
-                            st.info("🤖")
-                    
-                    with col2:
-                        st.markdown(f"**{bot['name']}**")
-                        st.markdown(f"{bot['description']}")
-                    
-                    with col3:
-                        delete_key = f"delete_{bot['id']}"
-                        confirm_key = f"confirm_{bot['id']}"
+                    if is_editing:
+                        # Edit mode
+                        st.markdown(f"**Editing Agent #{bot['number']}**")
                         
-                        if st.session_state.delete_confirm.get(confirm_key, False):
-                            st.warning(f"Delete {bot['name']}?")
-                            col_yes, col_no = st.columns(2)
-                            with col_yes:
-                                if st.button("✓ Yes", key=f"yes_{bot['id']}", type="primary", use_container_width=True):
-                                    # Remove bot from list
-                                    st.session_state.created_bots = [b for b in st.session_state.created_bots if b['id'] != bot['id']]
-                                    st.session_state.delete_confirm[confirm_key] = False
+                        with st.form(f"edit_form_{bot['id']}", clear_on_submit=False):
+                            edited_description = st.text_area(
+                                "Edit agent description:",
+                                value=bot['full_description'],
+                                height=150,
+                                key=f"edit_desc_{bot['id']}"
+                            )
+                            
+                            col_save, col_cancel = st.columns(2)
+                            with col_save:
+                                save_clicked = st.form_submit_button("💾 Save", type="primary", use_container_width=True)
+                            with col_cancel:
+                                cancel_clicked = st.form_submit_button("✗ Cancel", use_container_width=True)
+                            
+                            if save_clicked and edited_description and edited_description.strip():
+                                try:
+                                    # Regenerate name based on new description
+                                    client = openai.OpenAI(api_key=OPENAI_API_KEY)
+                                    response = client.chat.completions.create(
+                                        model="gpt-4o-mini",
+                                        messages=[
+                                            {"role": "system", "content": "You are a helpful assistant that creates concise bot names and descriptions. Respond in JSON format with 'name' and 'description' fields. Name should be 2-4 words, description should be 1-2 sentences."},
+                                            {"role": "user", "content": f"Based on this agent description, create a catchy name and a short description:\n\n{edited_description}"}
+                                        ],
+                                        response_format={"type": "json_object"},
+                                        temperature=0.7
+                                    )
+                                    
+                                    import json
+                                    bot_data = json.loads(response.choices[0].message.content)
+                                    new_name = bot_data.get("name", "AI Agent")
+                                    new_desc = bot_data.get("description", edited_description[:100])
+                                    
+                                    # Update bot (keep same number and id)
+                                    for i, b in enumerate(st.session_state.created_bots):
+                                        if b['id'] == bot['id']:
+                                            st.session_state.created_bots[i]['name'] = new_name
+                                            st.session_state.created_bots[i]['description'] = new_desc
+                                            st.session_state.created_bots[i]['full_description'] = edited_description
+                                            break
+                                    
+                                    st.session_state.editing_bot = None
                                     st.rerun()
-                            with col_no:
-                                if st.button("✗ No", key=f"no_{bot['id']}", use_container_width=True):
-                                    st.session_state.delete_confirm[confirm_key] = False
-                                    st.rerun()
-                        else:
-                            if st.button("🗑️", key=delete_key, help="Delete this agent"):
-                                st.session_state.delete_confirm[confirm_key] = True
+                                except Exception as e:
+                                    st.error(f"Error updating bot: {str(e)}")
+                            
+                            if cancel_clicked:
+                                st.session_state.editing_bot = None
                                 st.rerun()
+                    else:
+                        # Display mode
+                        col1, col2, col3 = st.columns([1, 8, 1])
+                        
+                        with col1:
+                            if bot_path:
+                                st.image(bot_path, width=80)
+                            else:
+                                st.info("🤖")
+                        
+                        with col2:
+                            st.markdown(f"**{bot['name']}** (#{bot['number']})")
+                            st.markdown(f"{bot['description']}")
+                        
+                        with col3:
+                            delete_key = f"delete_{bot['id']}"
+                            edit_key = f"edit_{bot['id']}"
+                            confirm_key = f"confirm_{bot['id']}"
+                            
+                            if st.session_state.delete_confirm.get(confirm_key, False):
+                                st.warning(f"Delete {bot['name']}?")
+                                col_yes, col_no = st.columns(2)
+                                with col_yes:
+                                    if st.button("✓ Yes", key=f"yes_{bot['id']}", type="primary", use_container_width=True):
+                                        # Remove bot from list and free up the number
+                                        st.session_state.used_numbers.discard(bot['number'])
+                                        st.session_state.created_bots = [b for b in st.session_state.created_bots if b['id'] != bot['id']]
+                                        st.session_state.delete_confirm[confirm_key] = False
+                                        st.rerun()
+                                with col_no:
+                                    if st.button("✗ No", key=f"no_{bot['id']}", use_container_width=True):
+                                        st.session_state.delete_confirm[confirm_key] = False
+                                        st.rerun()
+                            else:
+                                col_edit, col_delete = st.columns(2)
+                                with col_edit:
+                                    if st.button("✏️", key=edit_key, help="Edit this agent", use_container_width=True):
+                                        st.session_state.editing_bot = bot['id']
+                                        st.rerun()
+                                with col_delete:
+                                    if st.button("🗑️", key=delete_key, help="Delete this agent", use_container_width=True):
+                                        st.session_state.delete_confirm[confirm_key] = True
+                                        st.rerun()
                     
                     st.markdown("---")
     
