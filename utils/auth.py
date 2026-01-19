@@ -106,12 +106,12 @@ class GoogleAuth:
         # Force account selection and consent to ensure user can choose the right account
         # IMPORTANT: Make sure redirect_uri matches EXACTLY what's in Google Cloud Console
         try:
+            # Remove login_hint as it might cause issues - let user select account naturally
             authorization_url, _ = self.flow.authorization_url(
                 access_type='offline',
                 include_granted_scopes='true',
                 state=state,
-                prompt='consent select_account',  # Force both consent and account selection screens
-                login_hint='ninad123@gmail.com'  # Hint which account to use
+                prompt='consent select_account'  # Force both consent and account selection screens
             )
             # Debug: Show the redirect URI being used in the URL
             st.info(f"🔍 DEBUG: Authorization URL redirect_uri parameter: {self.redirect_uri}")
@@ -119,6 +119,9 @@ class GoogleAuth:
         except Exception as e:
             st.error(f"❌ Error creating authorization URL: {e}")
             st.error(f"Redirect URI being used: {self.redirect_uri}")
+            st.error(f"Client ID: {self.client_id[:20] if self.client_id else 'None'}...")
+            import traceback
+            st.code(traceback.format_exc())
             raise
 
     def handle_callback(self, code, state):
