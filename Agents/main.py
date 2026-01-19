@@ -276,14 +276,18 @@ def main():
                         confirm_key = f"confirm_{bot['id']}"
                         
                         if st.session_state.delete_confirm.get(confirm_key, False):
-                            if st.button("✓ Yes", key=f"yes_{bot['id']}", type="primary"):
-                                # Remove bot from list
-                                st.session_state.created_bots = [b for b in st.session_state.created_bots if b['id'] != bot['id']]
-                                st.session_state.delete_confirm[confirm_key] = False
-                                st.rerun()
-                            if st.button("✗ No", key=f"no_{bot['id']}"):
-                                st.session_state.delete_confirm[confirm_key] = False
-                                st.rerun()
+                            st.warning(f"Delete {bot['name']}?")
+                            col_yes, col_no = st.columns(2)
+                            with col_yes:
+                                if st.button("✓ Yes", key=f"yes_{bot['id']}", type="primary", use_container_width=True):
+                                    # Remove bot from list
+                                    st.session_state.created_bots = [b for b in st.session_state.created_bots if b['id'] != bot['id']]
+                                    st.session_state.delete_confirm[confirm_key] = False
+                                    st.rerun()
+                            with col_no:
+                                if st.button("✗ No", key=f"no_{bot['id']}", use_container_width=True):
+                                    st.session_state.delete_confirm[confirm_key] = False
+                                    st.rerun()
                         else:
                             if st.button("🗑️", key=delete_key, help="Delete this agent"):
                                 st.session_state.delete_confirm[confirm_key] = True
