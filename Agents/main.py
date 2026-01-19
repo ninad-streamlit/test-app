@@ -222,10 +222,9 @@ def main():
         st.markdown("**Create individual AI agents with specific capabilities and personalities. When you have 2 or more agents, they form a team and can be assigned missions to work together.**")
         
         # Use form to handle submission and clear input
-        # Regenerate example on each view to show variety
-        if 'agent_example' not in st.session_state or st.session_state.get('refresh_agent_example', False):
+        # Generate example if not exists (will be regenerated after agent creation)
+        if 'agent_example' not in st.session_state:
             st.session_state.agent_example = generate_agent_example()
-            st.session_state.refresh_agent_example = False
         
         with st.form("agent_creation_form", clear_on_submit=True):
             agent_description = st.text_area(
