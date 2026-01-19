@@ -558,11 +558,56 @@ def main():
                             )
                             
                             story_data = json.loads(story_response.choices[0].message.content)
-                            st.session_state.mission_story_title = story_data.get("title", "The Amazing Team Adventure")
-                            st.session_state.mission_story = story_data.get("story", "Once upon a time, the agents worked together to complete the mission!")
+                            story_title = story_data.get("title", "The Amazing Team Adventure")
+                            story_content = story_data.get("story", "")
+                            
+                            # Validate story has paragraphs
+                            if story_content and len(story_content.strip()) > 50:
+                                # Ensure story has proper paragraph breaks
+                                # Replace single \n with \n\n if not already present
+                                if '\n\n' not in story_content and '\n' in story_content:
+                                    # Split by \n and rejoin with \n\n
+                                    paragraphs = [p.strip() for p in story_content.split('\n') if p.strip()]
+                                    story_content = '\n\n'.join(paragraphs)
+                                
+                                st.session_state.mission_story_title = story_title
+                                st.session_state.mission_story = story_content
+                            else:
+                                # If story is too short or empty, try again with a simpler prompt
+                                raise ValueError("Generated story is too short or empty")
                         except Exception as e:
-                            st.session_state.mission_story_title = "The Amazing Team Adventure"
-                            st.session_state.mission_story = f"Once upon a time, the agents worked together to complete the mission! They planned, executed, and thanked each other for their wonderful teamwork!"
+                            # Show error and try again with a simpler prompt
+                            st.error(f"Error generating story: {str(e)}. Retrying with simpler prompt...")
+                            try:
+                                # Retry with a simpler, more direct prompt
+                                retry_response = client.chat.completions.create(
+                                    model="gpt-4o-mini",
+                                    messages=[
+                                        {"role": "system", "content": "Write simple stories for children aged 5-10. Use very simple words. Write exactly 4 paragraphs. Each paragraph has 5-6 short sentences. Separate paragraphs with two line breaks. Respond in JSON with 'title' and 'story' fields."},
+                                        {"role": "user", "content": f"Write a simple story in 4 paragraphs. Each paragraph has 5-6 short sentences (6-10 words each). Use simple words.\n\nStory about: {mission_description}\n\nAgents: {agent_info}\n\nParagraph 1: Agents meet and plan (5-6 sentences).\nParagraph 2: They start the mission (5-6 sentences).\nParagraph 3: They solve problems together (5-6 sentences).\nParagraph 4: Mission done! They celebrate (5-6 sentences).\n\nUse \\n\\n to separate paragraphs. JSON format with 'title' and 'story'."}
+                                    ],
+                                    response_format={"type": "json_object"},
+                                    temperature=0.9
+                                )
+                                retry_data = json.loads(retry_response.choices[0].message.content)
+                                retry_title = retry_data.get("title", "The Amazing Team Adventure")
+                                retry_story = retry_data.get("story", "")
+                                
+                                if retry_story and len(retry_story.strip()) > 50:
+                                    # Fix paragraph breaks if needed
+                                    if '\n\n' not in retry_story and '\n' in retry_story:
+                                        paragraphs = [p.strip() for p in retry_story.split('\n') if p.strip()]
+                                        retry_story = '\n\n'.join(paragraphs)
+                                    
+                                    st.session_state.mission_story_title = retry_title
+                                    st.session_state.mission_story = retry_story
+                                    st.success("Story generated successfully!")
+                                else:
+                                    raise ValueError("Retry story generation also failed")
+                            except Exception as retry_error:
+                                st.session_state.mission_story_title = "The Amazing Team Adventure"
+                                st.session_state.mission_story = f"Once upon a time, the agents worked together to complete the mission! They planned, executed, and thanked each other for their wonderful teamwork! Error: {str(retry_error)}"
+                                st.error(f"Story generation failed. Please try again. Error: {str(retry_error)}")
                         
                         # Regenerate mission example for next mission
                         st.session_state.mission_example = generate_mission_example()
