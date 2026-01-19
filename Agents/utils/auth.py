@@ -318,10 +318,28 @@ class GoogleAuth:
         
         # Create login button
         try:
-            # Show redirect URI for debugging (user can verify it matches Google Cloud Console)
-            st.info(f"🔗 **Redirect URI being used:** `{self.redirect_uri}`\n\n⚠️ Make sure this EXACTLY matches the redirect URI in your Google Cloud Console OAuth credentials.")
+            # Show OAuth configuration for debugging
+            client_id_preview = self.client_id[:20] + "..." if self.client_id and len(self.client_id) > 20 else (self.client_id or "Not set")
+            scopes_str = ", ".join(self.scopes)
+            
+            with st.expander("🔍 OAuth Configuration Debug Info", expanded=True):
+                st.write(f"**Client ID:** `{client_id_preview}`")
+                st.write(f"**Redirect URI:** `{self.redirect_uri}`")
+                st.write(f"**Scopes being requested:**")
+                for scope in self.scopes:
+                    st.write(f"  - `{scope}`")
+                st.write("\n⚠️ **Verify in Google Cloud Console:**")
+                st.write("1. These scopes are added in OAuth consent screen → Scopes section")
+                st.write("2. Redirect URI matches exactly (including https/http)")
+                st.write("3. Your email is in Test users list")
+                st.write("4. App is in 'Testing' mode (or published)")
             
             auth_url = self.get_authorization_url()
+            
+            if auth_url:
+                # Show the authorization URL for debugging (truncated for security)
+                with st.expander("🔗 Full Authorization URL (for debugging)", expanded=False):
+                    st.code(auth_url, language=None)
             
             if auth_url:
                 st.markdown(f"""
