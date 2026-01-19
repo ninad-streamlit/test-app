@@ -16,39 +16,72 @@ except ImportError:
     REPORTLAB_AVAILABLE = False
 
 def generate_agent_example():
-    """Generate a short random agent description example (around 10 words) inspired by Star Trek characters"""
+    """Generate a short random agent description example (around 10 words) inspired by Star Trek characters with extensive variety"""
     star_trek_roles = [
         "Captain", "Science Officer", "Chief Engineer", "Medical Officer", 
         "Security Officer", "Communications Officer", "Navigator", "Counselor",
-        "Tactical Officer", "Operations Officer", "Helmsman", "First Officer"
+        "Tactical Officer", "Operations Officer", "Helmsman", "First Officer",
+        "Stellar Cartographer", "Exobiologist", "Quantum Physicist", "Xenolinguist",
+        "Chief Medical Officer", "Engineering Specialist", "Weapons Officer", "Diplomatic Officer",
+        "Astronomer", "Archaeologist", "Anthropologist", "Geologist", "Botanist", "Chemist",
+        "Transporter Chief", "Shuttle Pilot", "Computer Specialist", "Research Scientist"
     ]
     star_trek_traits = [
         "bold and brave", "logical and analytical", "curious and scientific", 
         "caring and compassionate", "protective and vigilant", "diplomatic and friendly",
         "precise and focused", "wise and understanding", "strategic and tactical",
-        "efficient and organized", "skilled and experienced", "loyal and trustworthy"
+        "efficient and organized", "skilled and experienced", "loyal and trustworthy",
+        "calm under pressure", "quick thinking", "adaptable and flexible", "intuitive and perceptive",
+        "methodical and thorough", "creative problem solver", "strong communicator", "patient teacher",
+        "detail oriented", "big picture thinker", "team player", "independent worker", "risk taker",
+        "cautious planner", "innovative designer", "practical implementer", "visionary leader", "supportive teammate"
     ]
     star_trek_qualities = [
         "exploring new worlds", "solving complex problems", "helping others in need",
         "protecting the crew", "discovering new knowledge", "maintaining peace",
         "navigating through space", "healing and caring", "communicating with aliens",
-        "analyzing data", "engineering solutions", "leading missions"
+        "analyzing data", "engineering solutions", "leading missions",
+        "studying alien cultures", "mapping star systems", "repairing starships", "treating injuries",
+        "negotiating treaties", "defending against threats", "researching anomalies", "teaching new skills",
+        "managing resources", "coordinating operations", "breaking codes", "gathering intelligence",
+        "planning expeditions", "documenting discoveries", "building alliances", "resolving conflicts",
+        "improving systems", "optimizing performance", "developing strategies", "executing plans"
     ]
     
-    role = random.choice(star_trek_roles)
-    trait = random.choice(star_trek_traits)
-    quality = random.choice(star_trek_qualities)
+    # Track used combinations to avoid repetition
+    if 'used_agent_examples' not in st.session_state:
+        st.session_state.used_agent_examples = []
     
-    # Generate short Star Trek-style examples (around 10 words)
-    examples = [
-        f"A {role} who is {trait} and loves {quality}.",
-        f"An agent who is a {role}, {trait}, specializing in {quality}.",
-        f"A {trait} {role} that enjoys {quality} and teamwork.",
-        f"An {role} agent who is {trait} and excels at {quality}.",
-        f"A {role} who is {trait} and dedicated to {quality}."
-    ]
+    # Try multiple combinations to find one not recently used
+    max_attempts = 10
+    for _ in range(max_attempts):
+        role = random.choice(star_trek_roles)
+        trait = random.choice(star_trek_traits)
+        quality = random.choice(star_trek_qualities)
+        
+        # Generate different example formats for variety
+        example_formats = [
+            f"A {role} who is {trait} and loves {quality}.",
+            f"An agent who is a {role}, {trait}, specializing in {quality}.",
+            f"A {trait} {role} that enjoys {quality} and teamwork.",
+            f"An {role} agent who is {trait} and excels at {quality}.",
+            f"A {role} who is {trait} and dedicated to {quality}.",
+            f"A {role} that is {trait}, always {quality}.",
+            f"An agent as a {role}, known for being {trait} and {quality}.",
+            f"A {role} agent who is {trait} with a passion for {quality}."
+        ]
+        example = random.choice(example_formats)
+        
+        # Check if this combination was recently used
+        if example not in st.session_state.used_agent_examples[-30:]:
+            st.session_state.used_agent_examples.append(example)
+            # Keep only last 100 examples
+            if len(st.session_state.used_agent_examples) > 100:
+                st.session_state.used_agent_examples = st.session_state.used_agent_examples[-50:]
+            return example
     
-    return random.choice(examples)
+    # If all attempts failed, return anyway (shouldn't happen often)
+    return example
 
 def generate_story_question_example(story_title, story_content, existing_questions=None):
     """Generate a relevant example question about the story with variety"""
@@ -114,19 +147,66 @@ def generate_story_question_example(story_title, story_content, existing_questio
             return random.choice(fallback_questions)
 
 def generate_creative_name_examples():
-    """Generate fancy example names for creative input"""
+    """Generate fancy example names for creative input with extensive variety"""
     fancy_names = [
-        "Stellar Commander", "Cosmic Navigator", "Neon Phoenix", "Quantum Explorer",
-        "Starfire Guardian", "Aurora Whisper", "Nebula Warrior", "Galaxy Seeker",
-        "Thunder Bolt", "Silver Shadow", "Crystal Knight", "Solar Flare",
-        "Mystic Voyager", "Echo Runner", "Zen Master", "Swift Arrow",
-        "Golden Dreamer", "Velvet Thunder", "Azure Dragon", "Crimson Hawk",
-        "Midnight Spark", "Dawn Breaker", "Frost Walker", "Blaze Rider",
-        "Ocean Sage", "Forest Whisper", "Mountain Peak", "Desert Storm"
+        # Space & Cosmic
+        "Stellar Commander", "Cosmic Navigator", "Quantum Explorer", "Nebula Warrior", "Galaxy Seeker",
+        "Starfire Guardian", "Aurora Whisper", "Solar Flare", "Lunar Eclipse", "Comet Rider",
+        "Orbit Master", "Planet Walker", "Stardust Seeker", "Cosmic Sage", "Nova Phoenix",
+        "Astro Captain", "Celestial Navigator", "Meteor Knight", "Eclipse Warrior", "Supernova Dreamer",
+        
+        # Elemental & Natural
+        "Thunder Bolt", "Silver Shadow", "Crystal Knight", "Frost Walker", "Blaze Rider",
+        "Ocean Sage", "Forest Whisper", "Mountain Peak", "Desert Storm", "River Flow",
+        "Stone Guardian", "Wind Chaser", "Flame Seeker", "Ice Breaker", "Storm Bringer",
+        "Earth Shaker", "Sky Dancer", "Wave Rider", "Leaf Whisper", "Thunder Roar",
+        
+        # Mythical & Fantasy
+        "Neon Phoenix", "Golden Dragon", "Crimson Hawk", "Azure Dragon", "Midnight Spark",
+        "Dawn Breaker", "Twilight Seeker", "Shadow Walker", "Light Bringer", "Dark Knight",
+        "Phoenix Rising", "Dragon Rider", "Griffin Wing", "Unicorn Dream", "Mermaid Song",
+        "Elf Warrior", "Dwarf Smith", "Wizard Sage", "Sorcerer King", "Enchantress Queen",
+        
+        # Action & Adventure
+        "Swift Arrow", "Echo Runner", "Mystic Voyager", "Brave Heart", "Wild Spirit",
+        "Bold Explorer", "Fearless Leader", "Courage Seeker", "Adventure Caller", "Journey Master",
+        "Pathfinder", "Trail Blazer", "Quest Seeker", "Treasure Hunter", "Legend Maker",
+        "Hero Rising", "Champion Born", "Warrior Soul", "Guardian Strong", "Protector Brave",
+        
+        # Colors & Characteristics
+        "Crimson Flame", "Emerald Eye", "Sapphire Dream", "Amber Light", "Onyx Shadow",
+        "Pearl Diver", "Ruby Heart", "Topaz Mind", "Jade Soul", "Diamond Spark",
+        "Silver Tongue", "Golden Touch", "Copper Heart", "Bronze Will", "Steel Mind",
+        
+        # Abstract & Conceptual
+        "Dream Weaver", "Hope Bringer", "Joy Seeker", "Peace Maker", "Wisdom Keeper",
+        "Truth Finder", "Justice Seeker", "Freedom Caller", "Unity Builder", "Harmony Keeper",
+        "Inspiration Source", "Creativity Flow", "Innovation Spark", "Genius Mind", "Brilliant Star"
     ]
     import random
-    # Return 3 random examples
-    return random.sample(fancy_names, 3)
+    
+    # Track used examples in session state to avoid repetition
+    if 'used_creative_names' not in st.session_state:
+        st.session_state.used_creative_names = []
+    
+    # Get available names (not recently used)
+    available_names = [n for n in fancy_names if n not in st.session_state.used_creative_names[-20:]]
+    
+    # If we've used too many, reset tracking (keep last 10)
+    if len(st.session_state.used_creative_names) > 80:
+        st.session_state.used_creative_names = st.session_state.used_creative_names[-10:]
+        available_names = fancy_names
+    
+    if not available_names:
+        available_names = fancy_names
+    
+    # Select 3 random examples
+    selected = random.sample(available_names, min(3, len(available_names)))
+    
+    # Track selected examples
+    st.session_state.used_creative_names.extend(selected)
+    
+    return selected
 
 def generate_mission_example():
     """Generate a random Star Trek-style mission example (around 20 words)"""
