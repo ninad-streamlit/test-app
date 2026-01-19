@@ -363,10 +363,6 @@ class GoogleAuth:
         
         # Create login button
         try:
-            # Temporary debug info for Streamlit Cloud (remove after fixing 403)
-            if 'streamlit.app' in self.redirect_uri or os.getenv('STREAMLIT_SERVER_URL', ''):
-                st.info(f"🔗 **Redirect URI being used:** `{self.redirect_uri}`\n\n⚠️ Make sure this EXACTLY matches the redirect URI in your Google Cloud Console OAuth credentials.")
-            
             auth_url = self.get_authorization_url()
             
             if auth_url:
