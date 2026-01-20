@@ -855,13 +855,15 @@ def main():
     config = STREAMLIT_CONFIG.copy()
     # Use relative path for logo (works locally and on Streamlit Cloud)
     # Prioritize Logo-DenkenLabs.png from Agents folder
+    # Prioritize Logo-DenkenLabs.png (NOT Bot.png) for favicon
     logo_paths = [
-        # First, try Logo-DenkenLabs.png from Agents folder (primary)
+        # First, try Logo-DenkenLabs.png from Agents folder (primary - this is what we want)
         os.path.join(os.path.dirname(__file__), "Logo-DenkenLabs.png"),
         # Then try transparent background versions with common naming patterns
         os.path.join(os.path.dirname(__file__), "Logo-DenkenLabs-transparent.png"),
         os.path.join(os.path.dirname(__file__), "Logo-DenkenLabs-trans.png"),
         os.path.join(os.path.dirname(__file__), "Logo-DenkenLabs-bg-transparent.png"),
+        os.path.join(os.path.dirname(__file__), "favicon-logo.png"),  # Also check favicon-logo.png
         # Fallback to other possible locations
         os.path.join(os.path.dirname(__file__), "agents", "Logo-DenkenLabs.png"),
         os.path.join(os.path.dirname(__file__), "agents", "Logo-DenkenLabs-transparent.png"),
@@ -875,6 +877,13 @@ def main():
         if os.path.exists(path):
             logo_path = path
             break
+    
+    # Ensure we're NOT using Bot.png - explicitly exclude it
+    if logo_path and 'bot' in logo_path.lower() and 'logo' not in logo_path.lower():
+        # If somehow Bot.png was selected, try to find Logo-DenkenLabs.png again
+        denken_labs_logo = os.path.join(os.path.dirname(__file__), "Logo-DenkenLabs.png")
+        if os.path.exists(denken_labs_logo):
+            logo_path = denken_labs_logo
     
     # Don't set page_icon here - we'll use HTML favicon links instead for better control
     if not logo_path:
