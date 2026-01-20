@@ -83,6 +83,61 @@ def generate_agent_example():
     # If all attempts failed, return anyway (shouldn't happen often)
     return example
 
+def clean_agent_description(desc):
+    """Clean and format agent description, handling dict-like structures."""
+    if not desc:
+        return ""
+    
+    # If it's already a string, check if it's a dict representation
+    if isinstance(desc, str):
+        # Check if it looks like a dict string
+        if desc.strip().startswith('{') and desc.strip().endswith('}'):
+            try:
+                # Try to parse it as JSON
+                desc_dict = json.loads(desc)
+                if isinstance(desc_dict, dict):
+                    # Format as readable text
+                    desc_parts = []
+                    if 'traits' in desc_dict:
+                        traits = desc_dict['traits']
+                        if isinstance(traits, list):
+                            desc_parts.append(f"Traits: {', '.join(traits)}")
+                        else:
+                            desc_parts.append(f"Traits: {traits}")
+                    if 'working_style' in desc_dict:
+                        desc_parts.append(f"Working Style: {desc_dict['working_style']}")
+                    if 'expertise' in desc_dict:
+                        desc_parts.append(f"Expertise: {desc_dict['expertise']}")
+                    if 'approach' in desc_dict:
+                        desc_parts.append(f"Approach: {desc_dict['approach']}")
+                    if desc_parts:
+                        return ". ".join(desc_parts)
+                    else:
+                        return desc  # Return original if we can't parse it
+            except (json.JSONDecodeError, ValueError):
+                # If it's not valid JSON, return as-is
+                pass
+        return desc
+    
+    # If it's a dict, format it
+    if isinstance(desc, dict):
+        desc_parts = []
+        if 'traits' in desc:
+            traits = desc['traits']
+            if isinstance(traits, list):
+                desc_parts.append(f"Traits: {', '.join(traits)}")
+            else:
+                desc_parts.append(f"Traits: {traits}")
+        if 'working_style' in desc:
+            desc_parts.append(f"Working Style: {desc['working_style']}")
+        if 'expertise' in desc:
+            desc_parts.append(f"Expertise: {desc['expertise']}")
+        if 'approach' in desc:
+            desc_parts.append(f"Approach: {desc['approach']}")
+        return ". ".join(desc_parts) if desc_parts else str(desc)
+    
+    return str(desc)
+
 def generate_story_question_example(story_title, story_content, existing_questions=None):
     """Generate a relevant example question about the story with extensive variety"""
     # Extract key elements from the story for context
@@ -1868,6 +1923,39 @@ def main():
                         bot_desc = bot_data.get("description", agent_description[:100])
                         bot_character = bot_data.get("character", "A versatile AI agent ready to assist.")
                         
+                        # Handle case where description might be a dict or contain dict-like structure
+                        if isinstance(bot_desc, dict):
+                            # If description is a dict, format it as readable text
+                            desc_parts = []
+                            if 'traits' in bot_desc:
+                                desc_parts.append(f"Traits: {', '.join(bot_desc['traits']) if isinstance(bot_desc['traits'], list) else bot_desc['traits']}")
+                            if 'working_style' in bot_desc:
+                                desc_parts.append(f"Working Style: {bot_desc['working_style']}")
+                            if 'expertise' in bot_desc:
+                                desc_parts.append(f"Expertise: {bot_desc['expertise']}")
+                            if 'approach' in bot_desc:
+                                desc_parts.append(f"Approach: {bot_desc['approach']}")
+                            bot_desc = ". ".join(desc_parts) if desc_parts else agent_description[:100]
+                        elif isinstance(bot_desc, str) and (bot_desc.startswith('{') or bot_desc.startswith("'")):
+                            # If description is a string representation of a dict, use fallback
+                            bot_desc = agent_description[:100]
+                        
+                        # Handle case where character might be a dict
+                        if isinstance(bot_character, dict):
+                            char_parts = []
+                            if 'traits' in bot_character:
+                                char_parts.append(f"Traits: {', '.join(bot_character['traits']) if isinstance(bot_character['traits'], list) else bot_character['traits']}")
+                            if 'working_style' in bot_character:
+                                char_parts.append(f"Working Style: {bot_character['working_style']}")
+                            if 'expertise' in bot_character:
+                                char_parts.append(f"Expertise: {bot_character['expertise']}")
+                            if 'approach' in bot_character:
+                                char_parts.append(f"Approach: {bot_character['approach']}")
+                            bot_character = ". ".join(char_parts) if char_parts else "A versatile AI agent ready to assist."
+                        elif isinstance(bot_character, str) and (bot_character.startswith('{') or bot_character.startswith("'")):
+                            # If character is a string representation of a dict, use fallback
+                            bot_character = "A versatile AI agent ready to assist."
+                        
                         # Generate unique 3-digit number
                         import random
                         while True:
@@ -1946,6 +2034,39 @@ def main():
                                     new_name = bot_data.get("name", "AI Agent")
                                     new_desc = bot_data.get("description", edited_description[:100])
                                     new_character = bot_data.get("character", "A versatile AI agent ready to assist.")
+                                    
+                                    # Handle case where description might be a dict or contain dict-like structure
+                                    if isinstance(new_desc, dict):
+                                        # If description is a dict, format it as readable text
+                                        desc_parts = []
+                                        if 'traits' in new_desc:
+                                            desc_parts.append(f"Traits: {', '.join(new_desc['traits']) if isinstance(new_desc['traits'], list) else new_desc['traits']}")
+                                        if 'working_style' in new_desc:
+                                            desc_parts.append(f"Working Style: {new_desc['working_style']}")
+                                        if 'expertise' in new_desc:
+                                            desc_parts.append(f"Expertise: {new_desc['expertise']}")
+                                        if 'approach' in new_desc:
+                                            desc_parts.append(f"Approach: {new_desc['approach']}")
+                                        new_desc = ". ".join(desc_parts) if desc_parts else edited_description[:100]
+                                    elif isinstance(new_desc, str) and (new_desc.startswith('{') or new_desc.startswith("'")):
+                                        # If description is a string representation of a dict, use fallback
+                                        new_desc = edited_description[:100]
+                                    
+                                    # Handle case where character might be a dict
+                                    if isinstance(new_character, dict):
+                                        char_parts = []
+                                        if 'traits' in new_character:
+                                            char_parts.append(f"Traits: {', '.join(new_character['traits']) if isinstance(new_character['traits'], list) else new_character['traits']}")
+                                        if 'working_style' in new_character:
+                                            char_parts.append(f"Working Style: {new_character['working_style']}")
+                                        if 'expertise' in new_character:
+                                            char_parts.append(f"Expertise: {new_character['expertise']}")
+                                        if 'approach' in new_character:
+                                            char_parts.append(f"Approach: {new_character['approach']}")
+                                        new_character = ". ".join(char_parts) if char_parts else "A versatile AI agent ready to assist."
+                                    elif isinstance(new_character, str) and (new_character.startswith('{') or new_character.startswith("'")):
+                                        # If character is a string representation of a dict, use fallback
+                                        new_character = "A versatile AI agent ready to assist."
                                     
                                     # Update bot (keep same number and id)
                                     for i, b in enumerate(st.session_state.created_bots):
@@ -2270,8 +2391,8 @@ def main():
                                 for bot in st.session_state.created_bots:
                                     agent_name = bot.get('name', 'Agent')
                                     agent_number = bot.get('number', '')
-                                    agent_desc = bot.get('description', '')
-                                    agent_character = bot.get('character', '')
+                                    agent_desc = clean_agent_description(bot.get('description', ''))
+                                    agent_character = clean_agent_description(bot.get('character', ''))
                                     
                                     # Agent name with number
                                     name_text = f"Agent #{agent_number}: {agent_name}" if agent_number else agent_name
@@ -2403,8 +2524,8 @@ def main():
                                 for bot in st.session_state.created_bots:
                                     agent_name = bot.get('name', 'Agent')
                                     agent_number = bot.get('number', '')
-                                    agent_desc = bot.get('description', '')
-                                    agent_character = bot.get('character', '')
+                                    agent_desc = clean_agent_description(bot.get('description', ''))
+                                    agent_character = clean_agent_description(bot.get('character', ''))
                                     
                                     # Agent name with number
                                     pdf.set_font("Arial", "B", 11)
