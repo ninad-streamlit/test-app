@@ -16,22 +16,31 @@ def get_openai_api_key():
     # Try Streamlit secrets first (for Streamlit Cloud)
     try:
         import streamlit as st
-        from streamlit.runtime.secrets import StreamlitSecretNotFoundError
         
         # Try to get from Streamlit secrets (for Streamlit Cloud)
         if hasattr(st, 'secrets') and st.secrets:
             try:
-                # Try direct access first (Streamlit Cloud format) - same pattern as auth.py
+                # Try direct dictionary access first (most common in Streamlit Cloud)
                 api_key = st.secrets['OPENAI_API_KEY']
-            except (StreamlitSecretNotFoundError, KeyError, AttributeError, RuntimeError):
-                # Secrets file not found (local dev) or key missing - try .get() method
+            except (KeyError, AttributeError, TypeError):
+                # Key not found or wrong type - try .get() method
                 try:
                     api_key = st.secrets.get('OPENAI_API_KEY', None)
-                except (StreamlitSecretNotFoundError, AttributeError, TypeError, RuntimeError):
-                    # Secrets not available at all
+                except (AttributeError, TypeError):
                     pass
-    except (AttributeError, KeyError, TypeError, ImportError, RuntimeError):
-        # Streamlit secrets not available or not initialized
+            
+            # Also try attribute-style access as fallback
+            if not api_key:
+                try:
+                    if hasattr(st.secrets, 'OPENAI_API_KEY'):
+                        api_key = getattr(st.secrets, 'OPENAI_API_KEY')
+                except (AttributeError, TypeError):
+                    pass
+    except (ImportError, AttributeError, RuntimeError):
+        # Streamlit not available or not initialized - fall through to env vars
+        pass
+    except Exception:
+        # Catch any other unexpected errors and fall through to env vars
         pass
     
     # Fall back to environment variables if secrets not found (for local development)
