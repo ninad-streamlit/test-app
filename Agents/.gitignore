@@ -1,0 +1,8 @@
+# Secrets files - do not commit
+STREAMLIT_SECRETS_EXACT.toml
+streamlit_secrets_clean.toml
+streamlit_secrets_final.toml
+streamlit_secrets.txt
+SET_STREAMLIT_SECRETS.md
+*.secrets.toml
+*.secrets.txt

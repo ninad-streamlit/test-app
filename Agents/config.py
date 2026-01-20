@@ -14,14 +14,26 @@ def get_openai_api_key():
     # Try Streamlit secrets first (for Streamlit Cloud)
     try:
         import streamlit as st
-        if hasattr(st, 'secrets') and st.secrets:
-            try:
-                api_key = st.secrets.get("OPENAI_API_KEY")
-                if api_key:
-                    return api_key
-            except (AttributeError, KeyError, TypeError):
-                pass
+        # Check if secrets are available without triggering errors
+        try:
+            # Try to access secrets - this may raise RuntimeError if secrets file doesn't exist
+            if hasattr(st, 'secrets'):
+                secrets_obj = st.secrets
+                if secrets_obj:
+                    api_key = secrets_obj.get("OPENAI_API_KEY")
+                    if api_key:
+                        return api_key
+        except RuntimeError as e:
+            # Streamlit raises RuntimeError when secrets file is not found
+            # This is expected for local development - fall through to env vars
+            if "No secrets found" not in str(e):
+                # Re-raise if it's a different RuntimeError
+                raise
+        except (AttributeError, KeyError, TypeError):
+            # Other errors accessing secrets - fall back to env vars
+            pass
     except (ImportError, AttributeError):
+        # Streamlit not available - fall back to env vars
         pass
     
     # Fall back to environment variables (for local development)

@@ -853,44 +853,131 @@ def generate_mission_example():
 def main():
     # Set page config with logo as favicon
     config = STREAMLIT_CONFIG.copy()
+    
+    # Crop percentage: 0.0 = no crop, 0.5 = crop 50% from each side (shows only center)
+    # Higher values = more zoom, less white background visible
+    # Adjust this value to control how much of the logo is visible
+    crop_percent = 0.185  # Crop 18.5% from each side = shows center 63% of image
+    
     # Use relative path for logo (works locally and on Streamlit Cloud)
     # Prioritize Logo-DenkenLabs.png from Agents folder
     # Prioritize Logo-DenkenLabs.png (NOT Bot.png) for favicon
+    # Try multiple locations for Logo-DenkenLabs.png, prioritizing agents subfolder
+    # NOTE: favicon-logo.png is EXCLUDED - it contains a crown image, not the Denken Labs logo
     logo_paths = [
-        # First, try Logo-DenkenLabs.png from Agents folder (primary - this is what we want)
+        # First priority: agents/Logo-DenkenLabs.png (in case main one is wrong)
+        os.path.join(os.path.dirname(__file__), "agents", "Logo-DenkenLabs.png"),
+        # Second priority: Logo-DenkenLabs.png from Agents folder root
         os.path.join(os.path.dirname(__file__), "Logo-DenkenLabs.png"),
-        # Then try transparent background versions with common naming patterns
+        # Then try transparent background versions
         os.path.join(os.path.dirname(__file__), "Logo-DenkenLabs-transparent.png"),
         os.path.join(os.path.dirname(__file__), "Logo-DenkenLabs-trans.png"),
         os.path.join(os.path.dirname(__file__), "Logo-DenkenLabs-bg-transparent.png"),
-        os.path.join(os.path.dirname(__file__), "favicon-logo.png"),  # Also check favicon-logo.png
-        # Fallback to other possible locations
-        os.path.join(os.path.dirname(__file__), "agents", "Logo-DenkenLabs.png"),
         os.path.join(os.path.dirname(__file__), "agents", "Logo-DenkenLabs-transparent.png"),
         os.path.join(os.path.dirname(__file__), "agents", "Logo-DenkenLabs-trans.png"),
+        # Other possible locations
         os.path.join(os.path.dirname(__file__), "logo_DenkenLabs.png"),
         os.path.join(os.path.dirname(__file__), "Agents", "Logo-DenkenLabs.png"),
         os.path.join(os.path.dirname(__file__), "Agents", "agents", "Logo-DenkenLabs.png"),
     ]
+    
     logo_path = None
+    # Find the first existing logo file (excluding favicon-logo.png and Bot.png)
     for path in logo_paths:
         if os.path.exists(path):
-            logo_path = path
-            break
+            # Skip favicon-logo.png (crown) and Bot.png
+            if 'favicon-logo' not in path.lower() and ('bot' not in path.lower() or 'logo' in path.lower()):
+                logo_path = path
+                break
     
-    # Ensure we're NOT using Bot.png - explicitly exclude it
-    if logo_path and 'bot' in logo_path.lower() and 'logo' not in logo_path.lower():
-        # If somehow Bot.png was selected, try to find Logo-DenkenLabs.png again
-        denken_labs_logo = os.path.join(os.path.dirname(__file__), "Logo-DenkenLabs.png")
-        if os.path.exists(denken_labs_logo):
-            logo_path = denken_labs_logo
+    # Final safety check: ensure we're NOT using Bot.png or favicon-logo.png (crown image)
+    if logo_path and (('bot' in logo_path.lower() and 'logo' not in logo_path.lower()) or 'favicon-logo' in logo_path.lower()):
+        # Force use of primary logo or set to None
+        if os.path.exists(primary_logo):
+            logo_path = primary_logo
+        else:
+            logo_path = None
     
-    # Set page_icon to None to prevent Streamlit from using the emoji default
-    # We'll inject the favicon via JavaScript instead for better control
-    if logo_path:
-        config['page_icon'] = None  # Don't use Streamlit's default emoji
+    # NEW APPROACH: Create a cropped favicon file and use it directly with Streamlit's page_icon
+    # This bypasses JavaScript and uses Streamlit's native favicon system
+    cropped_favicon_path = None
+    if logo_path and os.path.exists(logo_path):
+        try:
+            from PIL import Image
+            
+            # Open and process the logo
+            img = Image.open(logo_path)
+            if img.mode != 'RGBA':
+                img = img.convert('RGBA')
+            
+            width, height = img.size
+            
+            # Calculate crop coordinates (centered crop)
+            crop_percent = min(crop_percent, 0.49)  # Cap at 49% to ensure valid coordinates
+            left = int(width * crop_percent)
+            top = int(height * crop_percent)
+            right = int(width * (1 - crop_percent))
+            bottom = int(height * (1 - crop_percent))
+            
+            # Validate crop coordinates
+            if left >= right or top >= bottom:
+                crop_percent = 0.25
+                left = int(width * crop_percent)
+                top = int(height * crop_percent)
+                right = int(width * (1 - crop_percent))
+                bottom = int(height * (1 - crop_percent))
+            
+            # Crop the image
+            img = img.crop((left, top, right, bottom))
+            
+            # Validate dimensions
+            width, height = img.size
+            if width <= 0 or height <= 0:
+                # Fallback to safe crop
+                img = Image.open(logo_path)
+                if img.mode != 'RGBA':
+                    img = img.convert('RGBA')
+                orig_width, orig_height = img.size
+                crop_percent = 0.25
+                left = int(orig_width * crop_percent)
+                top = int(orig_height * crop_percent)
+                right = int(orig_width * (1 - crop_percent))
+                bottom = int(orig_height * (1 - crop_percent))
+                img = img.crop((left, top, right, bottom))
+                width, height = img.size
+            
+            # Make it square
+            if width != height:
+                size = max(width, height)
+                square_img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
+                paste_x = (size - width) // 2
+                paste_y = (size - height) // 2
+                square_img.paste(img, (paste_x, paste_y), img)
+                img = square_img
+            
+            # Resize to 192x192 for better visibility
+            favicon_size = 192
+            img_resized = img.resize((favicon_size, favicon_size), Image.Resampling.LANCZOS)
+            
+            # Save to a file in the same directory as the script
+            # Use a filename that includes crop_percent so it changes when crop changes
+            base_dir = os.path.dirname(__file__)
+            crop_str = str(crop_percent).replace('.', '_')
+            cropped_favicon_path = os.path.join(base_dir, f"favicon_cropped_{crop_str}.png")
+            img_resized.save(cropped_favicon_path, format='PNG', optimize=True)
+            
+            # Use the cropped favicon file directly
+            config['page_icon'] = cropped_favicon_path
+            
+        except Exception as e:
+            # If cropping fails, fall back to original logo
+            if logo_path and os.path.exists(logo_path) and 'favicon-logo' not in logo_path.lower():
+                config['page_icon'] = logo_path
+            else:
+                config['page_icon'] = "🤖"  # Fallback emoji
     else:
-        config['page_icon'] = "🤖"  # Fallback to emoji only if no logo found
+        config['page_icon'] = "🤖"  # Fallback emoji
+    
     st.set_page_config(**config)
     
     # Get the app URL for Open Graph image (for sharing previews)
@@ -961,150 +1048,311 @@ def main():
     # Inject meta tags immediately using st.markdown
     st.markdown(meta_tags_js, unsafe_allow_html=True)
     
-    # Add favicon link to HTML head for better control with proper sizing
-    if logo_path:
+    # Favicon is now handled directly via Streamlit's page_icon using the cropped file
+    # No need for JavaScript injection - the cropped favicon file is used directly
+    # This is more reliable than JavaScript-based approach
+    
+    favicon_base64 = None
+    if logo_path and os.path.exists(logo_path):
         # Use base64 encoding for favicon to ensure it loads and can be sized properly
         import base64
         try:
-            # Resize image to make favicon appear larger (reduce padding/cropping)
+            # Crop image to remove white/transparent background and zoom into the logo content
             try:
                 from PIL import Image
-                img = Image.open(logo_path)
-                # Get original dimensions
-                orig_width, orig_height = img.size
-                # Increase size by 20% (reduce padding by showing more of the image)
-                # Crop less - show 80% of the image instead of full image (which might have padding)
-                # Actually, let's resize to make it larger for the favicon
-                # Create a larger version (32x32 -> 48x48, or 64x64 -> 96x96 for better visibility)
-                # For favicon, browsers typically use 16x16 or 32x32, so we'll create a 48x48 version
-                # that will be scaled down but appear larger due to less padding
-                target_size = max(orig_width, orig_height)
-                # Increase target size by 20% to show more content
-                new_size = int(target_size * 1.2)
-                # Resize maintaining aspect ratio, then crop to square if needed
-                if orig_width != orig_height:
-                    # Make it square by cropping the center
-                    size = min(orig_width, orig_height)
-                    left = (orig_width - size) // 2
-                    top = (orig_height - size) // 2
-                    img = img.crop((left, top, left + size, top + size))
                 
-                # Resize to larger size for better visibility
-                img_resized = img.resize((new_size, new_size), Image.Resampling.LANCZOS)
+                img = Image.open(logo_path)
+                
+                # Convert to RGBA if needed (for transparency support)
+                if img.mode != 'RGBA':
+                    img = img.convert('RGBA')
+                
+                # Use crop percentage approach - simple and controllable
+                # This crops a percentage from each edge, effectively zooming into the center
+                width, height = img.size
+                
+                # Calculate crop coordinates (centered crop)
+                # Ensure crop_percent is valid (0.0 to 0.5 max to avoid invalid coordinates)
+                crop_percent = min(crop_percent, 0.49)  # Cap at 49% to ensure valid coordinates
+                left = int(width * crop_percent)
+                top = int(height * crop_percent)
+                right = int(width * (1 - crop_percent))
+                bottom = int(height * (1 - crop_percent))
+                
+                # Validate crop coordinates
+                if left >= right or top >= bottom:
+                    # Fallback to center 50% if crop is too aggressive
+                    crop_percent = 0.25
+                    left = int(width * crop_percent)
+                    top = int(height * crop_percent)
+                    right = int(width * (1 - crop_percent))
+                    bottom = int(height * (1 - crop_percent))
+                
+                # Crop the image
+                img = img.crop((left, top, right, bottom))
+                
+                # Validate the cropped image has valid dimensions
+                width, height = img.size
+                if width <= 0 or height <= 0:
+                    # If crop resulted in invalid dimensions, use a safe default
+                    crop_percent = 0.25
+                    img = Image.open(logo_path)
+                    if img.mode != 'RGBA':
+                        img = img.convert('RGBA')
+                    orig_width, orig_height = img.size
+                    left = int(orig_width * crop_percent)
+                    top = int(orig_height * crop_percent)
+                    right = int(orig_width * (1 - crop_percent))
+                    bottom = int(orig_height * (1 - crop_percent))
+                    img = img.crop((left, top, right, bottom))
+                    width, height = img.size
+                
+                # Make it square by taking the larger dimension and centering
+                if width != height:
+                    size = max(width, height)
+                    # Create a new square image with transparent background
+                    square_img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
+                    # Paste the cropped image in the center
+                    paste_x = (size - width) // 2
+                    paste_y = (size - height) // 2
+                    square_img.paste(img, (paste_x, paste_y), img)
+                    img = square_img
+                
+                # Resize to 192x192 for maximum visibility - larger size means more detail
+                # Browsers will scale it down but it will appear much larger and clearer
+                favicon_size = 192
+                img_resized = img.resize((favicon_size, favicon_size), Image.Resampling.LANCZOS)
                 
                 # Save to bytes
                 from io import BytesIO
                 img_bytes = BytesIO()
-                img_resized.save(img_bytes, format='PNG')
+                img_resized.save(img_bytes, format='PNG', optimize=True)
                 img_bytes.seek(0)
                 favicon_base64 = base64.b64encode(img_bytes.read()).decode()
+                
+                # Verify we have valid base64 data
+                if not favicon_base64 or len(favicon_base64) < 100:
+                    favicon_base64 = None
             except (ImportError, Exception) as e:
-                # Fallback: use original image if PIL not available or resize fails
-                with open(logo_path, "rb") as favicon_file:
-                    favicon_base64 = base64.b64encode(favicon_file.read()).decode()
-            
-            # Use JavaScript to inject favicon and force browser to reload it
-            # Use a strong cache buster to ensure Logo-DenkenLabs.png is used, not Bot.png
-            import time
-            import random
-            cache_buster = f"{int(time.time())}_{random.randint(1000, 9999)}"
+                # If PIL fails, we can't crop, so don't use favicon_base64
+                # This ensures we don't accidentally use the uncropped image
+                favicon_base64 = None
+                # Log the error for debugging (but don't show to user)
+                import sys
+                print(f"Favicon processing error: {e}", file=sys.stderr)
+        except Exception:
+            favicon_base64 = None
+    
+    # Use JavaScript to inject favicon and force browser to reload it
+    # CRITICAL: Only use JavaScript favicon if we have a cropped version
+    # If favicon_base64 is None, it means cropping failed, so we'll rely on Streamlit's native favicon
+    if favicon_base64 and len(favicon_base64) > 100:  # Ensure we have actual base64 data
+        import time
+        import random
+        # Include crop_percent in cache buster so browser reloads when crop changes
+        # This ensures the browser fetches the new cropped image instead of using cached version
+        crop_percent_str = str(crop_percent).replace('.', '_')
+        cache_buster = f"crop_{crop_percent_str}_{int(time.time())}_{random.randint(1000, 9999)}_denkenlabs"
+        try:
             st.markdown(f"""
                 <script>
                 (function() {{
-                    // Function to remove all favicon links
+                    // Function to remove ALL existing favicons - we'll replace with our own
                     function removeAllFavicons() {{
-                        // Remove ALL existing favicon links (including Streamlit's default emoji and any cached ones)
-                        var existingLinks = document.querySelectorAll('link[rel*="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"]');
-                        existingLinks.forEach(function(link) {{
-                            link.remove();
-                        }});
-                        
-                        // Also try to remove by href if it contains bot.png or emoji (case insensitive)
-                        var allLinks = document.querySelectorAll('link');
+                        // Remove all favicon-related links EXCEPT our cropped one
+                        var allLinks = document.querySelectorAll('link[rel*="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"]');
                         allLinks.forEach(function(link) {{
                             var href = link.getAttribute('href') || '';
-                            var rel = link.getAttribute('rel') || '';
-                            if (href.toLowerCase().includes('bot.png') || 
-                                href.toLowerCase().includes('bot') ||
-                                (rel.toLowerCase().includes('icon') && !href.includes('denkenlabs') && !href.includes('base64'))) {{
+                            var id = link.getAttribute('id') || '';
+                            // Keep only our cropped favicon (has our ID or base64 with our cache buster)
+                            // Remove everything else, including Streamlit's native favicon
+                            var isOurFavicon = (id && id.startsWith('denkenlabs-favicon')) || 
+                                              (href.includes('data:image/png;base64') && href.includes('{cache_buster}'));
+                            if (!isOurFavicon) {{
                                 link.remove();
                             }}
                         }});
                     }}
                     
-                    // Function to add our favicon
-                    function addFavicon() {{
-                        // Add new favicon with Logo-DenkenLabs.png (larger size 96x96)
+                    // Function to add our large, cropped favicon
+                    function addLargeFavicon() {{
+                        // First, remove all existing favicons
+                        removeAllFavicons();
+                        
+                        // Force browser to clear favicon cache by creating a new link with unique ID
+                        var faviconUrl = 'data:image/png;base64,{favicon_base64}?v={cache_buster}';
+                        
+                        // Add our favicon with multiple sizes - prioritize larger sizes
+                        // 192x192 for maximum visibility (our processed, cropped image)
                         var link1 = document.createElement('link');
+                        link1.id = 'denkenlabs-favicon-192';
                         link1.rel = 'icon';
                         link1.type = 'image/png';
-                        link1.sizes = '96x96';
-                        link1.href = 'data:image/png;base64,{favicon_base64}?denkenlabs={cache_buster}';
-                        document.head.appendChild(link1);
+                        link1.sizes = '192x192';
+                        link1.href = faviconUrl;
+                        // Force reload by cloning and replacing
+                        var clone1 = link1.cloneNode(true);
+                        document.head.insertBefore(clone1, document.head.firstChild);
                         
+                        // 128x128 for high-DPI displays
                         var link2 = document.createElement('link');
-                        link2.rel = 'shortcut icon';
+                        link2.id = 'denkenlabs-favicon-128';
+                        link2.rel = 'icon';
                         link2.type = 'image/png';
-                        link2.sizes = '96x96';
-                        link2.href = 'data:image/png;base64,{favicon_base64}?denkenlabs={cache_buster}';
-                        document.head.appendChild(link2);
+                        link2.sizes = '128x128';
+                        link2.href = faviconUrl;
+                        document.head.insertBefore(link2, document.head.firstChild);
                         
+                        // 96x96 for standard high-DPI displays
                         var link3 = document.createElement('link');
-                        link3.rel = 'apple-touch-icon';
-                        link3.sizes = '180x180';
-                        link3.href = 'data:image/png;base64,{favicon_base64}?denkenlabs={cache_buster}';
-                        document.head.appendChild(link3);
+                        link3.id = 'denkenlabs-favicon-96';
+                        link3.rel = 'icon';
+                        link3.type = 'image/png';
+                        link3.sizes = '96x96';
+                        link3.href = faviconUrl;
+                        document.head.insertBefore(link3, document.head.firstChild);
+                        
+                        // 64x64 for standard displays
+                        var link4 = document.createElement('link');
+                        link4.id = 'denkenlabs-favicon-64';
+                        link4.rel = 'icon';
+                        link4.type = 'image/png';
+                        link4.sizes = '64x64';
+                        link4.href = faviconUrl;
+                        document.head.insertBefore(link4, document.head.firstChild);
+                        
+                        // 32x32 standard favicon (browsers will use this as fallback)
+                        var link5_32 = document.createElement('link');
+                        link5_32.id = 'denkenlabs-favicon-32';
+                        link5_32.rel = 'icon';
+                        link5_32.type = 'image/png';
+                        link5_32.sizes = '32x32';
+                        link5_32.href = faviconUrl;
+                        document.head.insertBefore(link5_32, document.head.firstChild);
+                        
+                        // Shortcut icon (legacy support) - place first for maximum priority
+                        var link6 = document.createElement('link');
+                        link6.id = 'denkenlabs-favicon-shortcut';
+                        link6.rel = 'shortcut icon';
+                        link6.type = 'image/png';
+                        link6.href = faviconUrl;
+                        document.head.insertBefore(link6, document.head.firstChild);
+                        
+                        // Apple touch icon for mobile
+                        var link7 = document.createElement('link');
+                        link7.id = 'denkenlabs-favicon-apple';
+                        link7.rel = 'apple-touch-icon';
+                        link7.sizes = '180x180';
+                        link7.href = faviconUrl;
+                        document.head.insertBefore(link7, document.head.firstChild);
+                        
+                        // Force browser to reload favicon by temporarily removing and re-adding
+                        // This helps bypass aggressive browser caching
+                        setTimeout(function() {{
+                            var favLinks = document.querySelectorAll('link[id^="denkenlabs-favicon"]');
+                            favLinks.forEach(function(link) {{
+                                var oldHref = link.href;
+                                link.href = '';
+                                setTimeout(function() {{
+                                    link.href = oldHref;
+                                }}, 10);
+                            }});
+                        }}, 100);
                     }}
                     
-                    // Remove immediately
+                    // Run immediately - don't wait for anything
                     removeAllFavicons();
+                    addLargeFavicon();
                     
-                    // Also remove after DOM is fully loaded
+                    // Also run on DOM load
                     if (document.readyState === 'loading') {{
                         document.addEventListener('DOMContentLoaded', function() {{
                             removeAllFavicons();
-                            addFavicon();
+                            addLargeFavicon();
                         }});
+                    }} else {{
+                        // DOM already loaded, run immediately again
+                        removeAllFavicons();
+                        addLargeFavicon();
                     }}
                     
-                    // Remove and add after delays to catch any late-loading favicons
-                    setTimeout(function() {{ removeAllFavicons(); addFavicon(); }}, 50);
-                    setTimeout(function() {{ removeAllFavicons(); addFavicon(); }}, 200);
-                    setTimeout(function() {{ removeAllFavicons(); addFavicon(); }}, 500);
+                    // Run multiple times aggressively to catch Streamlit's favicon additions
+                    setTimeout(function() {{ removeAllFavicons(); addLargeFavicon(); }}, 10);
+                    setTimeout(function() {{ removeAllFavicons(); addLargeFavicon(); }}, 50);
+                    setTimeout(function() {{ removeAllFavicons(); addLargeFavicon(); }}, 100);
+                    setTimeout(function() {{ removeAllFavicons(); addLargeFavicon(); }}, 200);
+                    setTimeout(function() {{ removeAllFavicons(); addLargeFavicon(); }}, 500);
+                    setTimeout(function() {{ removeAllFavicons(); addLargeFavicon(); }}, 1000);
+                    setTimeout(function() {{ removeAllFavicons(); addLargeFavicon(); }}, 2000);
+                    setTimeout(function() {{ removeAllFavicons(); addLargeFavicon(); }}, 3000);
                     
-                    // Add immediately
-                    addFavicon();
-                    
-                    // Use MutationObserver to catch any new favicon links Streamlit might add
+                    // Watch for ANY new favicon links and replace them immediately
                     var observer = new MutationObserver(function(mutations) {{
+                        var shouldReplace = false;
                         mutations.forEach(function(mutation) {{
                             mutation.addedNodes.forEach(function(node) {{
                                 if (node.nodeName === 'LINK') {{
                                     var rel = node.getAttribute('rel') || '';
                                     var href = node.getAttribute('href') || '';
-                                    if (rel.toLowerCase().includes('icon') && 
-                                        !href.includes('denkenlabs') && 
-                                        !href.includes('base64')) {{
-                                        // This is a favicon we didn't add - remove it
-                                        node.remove();
-                                        addFavicon();
+                                    if (rel.toLowerCase().includes('icon')) {{
+                                        var id = node.getAttribute('id') || '';
+                                        // If it's not our cropped favicon, remove it immediately
+                                        var isOurFavicon = (id && id.startsWith('denkenlabs-favicon')) || 
+                                                          (href.includes('data:image/png;base64') && href.includes('{cache_buster}'));
+                                        if (!isOurFavicon) {{
+                                            node.remove();
+                                            shouldReplace = true;
+                                        }}
                                     }}
                                 }}
                             }});
                         }});
+                        if (shouldReplace) {{
+                            // Replace immediately when Streamlit adds its favicon
+                            removeAllFavicons();
+                            addLargeFavicon();
+                        }}
                     }});
                     
+                    // Observe the head for any changes
                     observer.observe(document.head, {{ childList: true, subtree: true }});
+                    
+                    // Also observe the document for any head additions
+                    if (document.documentElement) {{
+                        observer.observe(document.documentElement, {{ childList: true, subtree: true }});
+                    }}
                 }})();
                 </script>
                 """, unsafe_allow_html=True)
-        except Exception:
-            # Fallback to file path if base64 encoding fails
-            st.markdown(f"""
-            <link rel="icon" type="image/png" sizes="96x96" href="{logo_path}">
-            <link rel="shortcut icon" type="image/png" sizes="96x96" href="{logo_path}">
-            <link rel="apple-touch-icon" sizes="180x180" href="{logo_path}">
-            """, unsafe_allow_html=True)
+        except Exception as e:
+            # Fallback: try to use base64 of original image without processing
+            try:
+                with open(logo_path, "rb") as f:
+                    fallback_base64 = base64.b64encode(f.read()).decode()
+                import time
+                import random
+                cache_buster = f"{int(time.time())}_{random.randint(1000, 9999)}_fallback"
+                st.markdown(f"""
+                <script>
+                (function() {{
+                    function setFavicon() {{
+                        var link = document.querySelector('link[rel*="icon"]') || document.createElement('link');
+                        link.rel = 'icon';
+                        link.type = 'image/png';
+                        link.href = 'data:image/png;base64,{fallback_base64}?v={cache_buster}';
+                        if (!document.querySelector('link[rel*="icon"]')) {{
+                            document.head.appendChild(link);
+                        }}
+                    }}
+                    setFavicon();
+                    if (document.readyState === 'loading') {{
+                        document.addEventListener('DOMContentLoaded', setFavicon);
+                    }}
+                }})();
+                </script>
+                """, unsafe_allow_html=True)
+            except Exception:
+                pass  # If all else fails, Streamlit's native page_icon will be used
     
     # Mobile-responsive CSS with minimal spacing and logo-matching colors
     st.markdown("""
