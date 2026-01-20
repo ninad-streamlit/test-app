@@ -1250,8 +1250,23 @@ def main():
         st.session_state.mission_example = generate_mission_example()
     
     if not st.session_state.show_agent_builder:
-        # Use inline style with data attribute for JavaScript targeting
-        st.markdown('<h2 id="welcome-title-header" class="welcome-title" style="color: #1e293b !important;" data-light-color="#bfdbfe">Welcome to Denken Labs</h2>', unsafe_allow_html=True)
+        # Inject inline style tag right before element for maximum CSS specificity
+        st.markdown("""
+        <style>
+        /* Inject style directly for welcome title - highest specificity */
+        [data-theme="dark"] #welcome-title-header {
+            color: #bfdbfe !important;
+        }
+        [data-theme="dark"] #welcome-title-header * {
+            color: #bfdbfe !important;
+        }
+        /* Also use attribute selector for extra specificity */
+        [data-theme="dark"] h2#welcome-title-header.welcome-title[data-light-color] {
+            color: #bfdbfe !important;
+        }
+        </style>
+        <h2 id="welcome-title-header" class="welcome-title" data-light-color="#bfdbfe" style="color: #1e293b;">Welcome to Denken Labs</h2>
+        """, unsafe_allow_html=True)
         st.markdown('<div class="tagline-text">**Get ready for an exiting mission**</div>', unsafe_allow_html=True)
         
         # Build your own agent button - compact (purple)
