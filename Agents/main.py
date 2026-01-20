@@ -1062,10 +1062,14 @@ def main():
     [data-theme="dark"] .story-content[style*="background"],
     [data-theme="dark"] div.story-content[style*="background"] {
         background-color: #1e293b !important; /* Dark background that blends with black background */
-        color: #e2e8f0 !important; /* Light gray text for readability on dark background */
         border-left-color: #6b46c1 !important; /* Purple border like Q&A */
     }
     
+    /* Match Q&A answer div structure exactly - target inner div with padding-left */
+    [data-theme="dark"] .story-content > div[style*="padding-left"],
+    [data-theme="dark"] div.story-content > div[style*="padding-left"],
+    [data-theme="dark"] .story-content > div[style*="padding-left"] *,
+    [data-theme="dark"] div.story-content > div[style*="padding-left"] *,
     [data-theme="dark"] .story-content *,
     [data-theme="dark"] .story-content p,
     [data-theme="dark"] .story-content span,
@@ -1083,7 +1087,7 @@ def main():
     [data-theme="dark"] .story-text,
     [data-theme="dark"] .story-text *,
     [data-theme="dark"] .story-content .story-text {
-        color: #e2e8f0 !important; /* Light gray text for all nested elements */
+        color: #e2e8f0 !important; /* Use exact same color as Q&A answers */
         background-color: transparent !important; /* Transparent background for nested elements */
     }
     
