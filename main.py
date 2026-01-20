@@ -827,56 +827,74 @@ def main():
     }
     </style>
     <script>
-    // Force "Welcome to Denken Labs" to be light in dark mode using JavaScript
+    // Force "Welcome to Denken Labs" to be light in dark mode - use ID and data attribute
     function forceWelcomeTitleLight() {
-        if (document.documentElement.getAttribute('data-theme') === 'dark') {
-            // Find the welcome title by text content or class
-            var allElements = document.querySelectorAll('h2, .welcome-title, [class*="welcome"]');
-            allElements.forEach(function(el) {
-                var text = (el.textContent || el.innerText || '').trim();
-                if (text.includes('Welcome to Denken Labs')) {
-                    // Directly set the color using multiple methods
-                    el.style.color = '#bfdbfe';
-                    el.style.setProperty('color', '#bfdbfe', 'important');
-                    el.setAttribute('style', el.getAttribute('style') + ' color: #bfdbfe !important;');
-                    
-                    // Also target all children
-                    var children = el.querySelectorAll('*');
-                    children.forEach(function(child) {
-                        child.style.color = '#bfdbfe';
-                        child.style.setProperty('color', '#bfdbfe', 'important');
-                    });
-                }
-            });
+        var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        
+        // Target by ID first (most specific)
+        var welcomeTitle = document.getElementById('welcome-title-header');
+        if (welcomeTitle) {
+            if (isDark) {
+                // Remove the inline color style and apply light color
+                var currentStyle = welcomeTitle.getAttribute('style') || '';
+                // Remove any color declarations from inline style
+                currentStyle = currentStyle.replace(/color\s*:[^;]*;?/gi, '');
+                currentStyle = currentStyle.replace(/!important/gi, '');
+                // Add the light color
+                welcomeTitle.setAttribute('style', currentStyle + ' color: #bfdbfe !important;');
+                welcomeTitle.style.color = '#bfdbfe';
+                welcomeTitle.style.setProperty('color', '#bfdbfe', 'important');
+            } else {
+                // Light mode - use default color
+                var lightColor = welcomeTitle.getAttribute('data-light-color') || '#1e293b';
+                welcomeTitle.style.setProperty('color', lightColor, 'important');
+            }
             
-            // Also try finding by class
-            var welcomeTitles = document.querySelectorAll('.welcome-title, h2.welcome-title');
-            welcomeTitles.forEach(function(el) {
-                el.style.color = '#bfdbfe';
-                el.style.setProperty('color', '#bfdbfe', 'important');
-                el.setAttribute('style', (el.getAttribute('style') || '') + ' color: #bfdbfe !important;');
-                var children = el.querySelectorAll('*');
-                children.forEach(function(child) {
-                    child.style.color = '#bfdbfe';
-                    child.style.setProperty('color', '#bfdbfe', 'important');
-                });
+            // Apply to children
+            var children = welcomeTitle.querySelectorAll('*');
+            children.forEach(function(child) {
+                child.style.setProperty('color', isDark ? '#bfdbfe' : '#1e293b', 'important');
+            });
+        }
+        
+        // Also try by text content as fallback
+        if (isDark) {
+            var allH2s = document.querySelectorAll('h2');
+            allH2s.forEach(function(el) {
+                var text = (el.textContent || el.innerText || '').trim();
+                if (text === 'Welcome to Denken Labs' || text.includes('Welcome to Denken Labs')) {
+                    el.style.removeProperty('color');
+                    el.style.setProperty('color', '#bfdbfe', 'important');
+                }
             });
         }
     }
     
     // Run immediately and continuously for welcome title
     forceWelcomeTitleLight();
-    setInterval(forceWelcomeTitleLight, 100);
+    setInterval(forceWelcomeTitleLight, 50); // More frequent checking
     
     // Watch for theme changes
     var welcomeThemeObserver = new MutationObserver(function(mutations) {
         mutations.forEach(function(mutation) {
             if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
-                forceWelcomeTitleLight();
+                setTimeout(forceWelcomeTitleLight, 10);
             }
         });
     });
     welcomeThemeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    
+    // Also watch for style attribute changes on the welcome title
+    if (document.getElementById('welcome-title-header')) {
+        var welcomeStyleObserver = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                    setTimeout(forceWelcomeTitleLight, 10);
+                }
+            });
+        });
+        welcomeStyleObserver.observe(document.getElementById('welcome-title-header'), { attributes: true, attributeFilter: ['style'] });
+    }
     
     // Force story content to match Q&A section styling - simpler approach
     function forceStoryTransparent() {
@@ -1218,7 +1236,8 @@ def main():
         st.session_state.mission_example = generate_mission_example()
     
     if not st.session_state.show_agent_builder:
-        st.markdown('<h2 class="welcome-title">Welcome to Denken Labs</h2>', unsafe_allow_html=True)
+        # Use inline style with data attribute for JavaScript targeting
+        st.markdown('<h2 id="welcome-title-header" class="welcome-title" style="color: #1e293b !important;" data-light-color="#bfdbfe">Welcome to Denken Labs</h2>', unsafe_allow_html=True)
         st.markdown('<div class="tagline-text">**Get ready for an exiting mission**</div>', unsafe_allow_html=True)
         
         # Build your own agent button - compact (purple)
