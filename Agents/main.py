@@ -647,12 +647,12 @@ def main():
     /* Light blue text for specific elements in dark mode */
     [data-theme="dark"] .welcome-title,
     [data-theme="dark"] .welcome-title * {
-        color: #60a5fa !important; /* Light blue */
+        color: #bfdbfe !important; /* Very light blue - lighter for better visibility */
     }
     
     [data-theme="dark"] .version-number,
     [data-theme="dark"] .version-number * {
-        color: #60a5fa !important; /* Light blue */
+        color: #bfdbfe !important; /* Very light blue - lighter for better visibility */
     }
     
     [data-theme="dark"] .agent-number,
