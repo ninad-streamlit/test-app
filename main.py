@@ -658,13 +658,13 @@ def main():
     [data-theme="dark"] .agent-number,
     [data-theme="dark"] .agent-number *,
     [data-theme="dark"] .agent-number strong {
-        color: #60a5fa !important; /* Light blue */
+        color: #bfdbfe !important; /* Very light blue - lighter for better visibility */
     }
     
     [data-theme="dark"] .agent-name,
     [data-theme="dark"] .agent-name *,
     [data-theme="dark"] .agent-name strong {
-        color: #60a5fa !important; /* Light blue */
+        color: #bfdbfe !important; /* Very light blue - lighter for better visibility */
     }
     
     /* Override any Streamlit default dark mode text colors */
