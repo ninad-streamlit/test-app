@@ -811,7 +811,7 @@ def main():
             }
             
             // Purple for Create button - target ALL Create buttons unless in mission form
-            if (text === 'Create' || (text.includes('Create') && !text.includes('Mission') && !text.includes('Save'))) {
+            if (text === 'Create' || text === 'Create Your Agent' || text === 'Keep Creating More Agents' || (text.includes('Create') && !text.includes('Mission') && !text.includes('Save'))) {
                 var isMissionForm = placeholder && (placeholder.toLowerCase().includes('mission') || placeholder.toLowerCase().includes('Mission'));
                 
                 // If it's NOT a mission form, make it purple
