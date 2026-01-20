@@ -2646,17 +2646,12 @@ def main():
                     if not pdf_generated:
                         try:
                             # Try importing fpdf2 (package name is fpdf2, but import is 'from fpdf import FPDF')
-                            # First try the standard import
+                            # First try the standard import (this is the correct way when fpdf2 is installed)
                             try:
                                 from fpdf import FPDF
                             except ImportError:
-                                # Try importing the package directly
-                                try:
-                                    import fpdf2
-                                    FPDF = fpdf2.FPDF
-                                except (ImportError, AttributeError):
-                                    # Last resort: try importing from fpdf2 package
-                                    from fpdf2 import FPDF
+                                # If that fails, the package might not be installed
+                                raise ImportError("fpdf2 package is not installed. Please install it via: pip install fpdf2")
                             
                             pdf = FPDF()
                             pdf.set_auto_page_break(auto=True, margin=15)
