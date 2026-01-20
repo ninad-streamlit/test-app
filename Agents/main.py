@@ -2177,11 +2177,54 @@ def main():
     
     try:
         if logo_path:
-            # Use HTML img tag with transparent background styling for better control
+            # Process logo to remove gray/white background and make it transparent
             import base64
-            with open(logo_path, "rb") as img_file:
-                logo_base64 = base64.b64encode(img_file.read()).decode()
-                st.markdown(f"""
+            try:
+                from PIL import Image
+                from io import BytesIO
+                
+                # Open the logo image
+                img = Image.open(logo_path)
+                
+                # Convert to RGBA if not already
+                if img.mode != 'RGBA':
+                    img = img.convert('RGBA')
+                
+                # Get image data
+                data = img.getdata()
+                
+                # Create new image data with transparent background
+                # Remove gray/white backgrounds (RGB values close to gray/white)
+                new_data = []
+                for item in data:
+                    r, g, b, a = item
+                    # Check if pixel is gray/white (similar RGB values and high brightness)
+                    # Gray typically has similar R, G, B values
+                    rgb_avg = (r + g + b) / 3
+                    is_gray = abs(r - g) < 30 and abs(g - b) < 30 and abs(r - b) < 30
+                    is_light = rgb_avg > 200  # Light gray/white
+                    
+                    # If it's a light gray/white pixel, make it transparent
+                    if is_gray and is_light:
+                        new_data.append((r, g, b, 0))  # Fully transparent
+                    else:
+                        new_data.append(item)  # Keep original
+                
+                # Apply the new data
+                img.putdata(new_data)
+                
+                # Save to bytes
+                img_bytes = BytesIO()
+                img.save(img_bytes, format='PNG')
+                img_bytes.seek(0)
+                logo_base64 = base64.b64encode(img_bytes.read()).decode()
+                
+            except Exception:
+                # Fallback: use original file if processing fails
+                with open(logo_path, "rb") as img_file:
+                    logo_base64 = base64.b64encode(img_file.read()).decode()
+            
+            st.markdown(f"""
                 <div style="text-align: center; background: transparent !important; background-color: transparent !important; padding: 0; margin: 0;">
                     <img src="data:image/png;base64,{logo_base64}" 
                          style="max-width: 280px; width: 100%; height: auto; 
