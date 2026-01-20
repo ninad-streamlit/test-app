@@ -2595,9 +2595,6 @@ def main():
                         st.info("💡 **Tip:** After downloading, open the HTML file in your browser and use **Print > Save as PDF** to create a PDF file.")
                     except Exception as e:
                         st.error(f"📄 Error generating downloadable file: {str(e)}")
-                            
-                            # Title style
-                            title_style = ParagraphStyle(
                                 'CustomTitle',
                                 parent=getSampleStyleSheet()['Heading1'],
                                 fontSize=18,
