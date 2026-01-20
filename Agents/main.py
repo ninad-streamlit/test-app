@@ -955,18 +955,58 @@ def main():
         # Use base64 encoding for favicon to ensure it loads and can be sized properly
         import base64
         try:
-            with open(logo_path, "rb") as favicon_file:
-                favicon_base64 = base64.b64encode(favicon_file.read()).decode()
-                st.markdown(f"""
-                <link rel="icon" type="image/png" sizes="64x64" href="data:image/png;base64,{favicon_base64}">
-                <link rel="shortcut icon" type="image/png" sizes="64x64" href="data:image/png;base64,{favicon_base64}">
+            # Resize image to make favicon appear larger (reduce padding/cropping)
+            try:
+                from PIL import Image
+                img = Image.open(logo_path)
+                # Get original dimensions
+                orig_width, orig_height = img.size
+                # Increase size by 20% (reduce padding by showing more of the image)
+                # Crop less - show 80% of the image instead of full image (which might have padding)
+                # Actually, let's resize to make it larger for the favicon
+                # Create a larger version (32x32 -> 48x48, or 64x64 -> 96x96 for better visibility)
+                # For favicon, browsers typically use 16x16 or 32x32, so we'll create a 48x48 version
+                # that will be scaled down but appear larger due to less padding
+                target_size = max(orig_width, orig_height)
+                # Increase target size by 20% to show more content
+                new_size = int(target_size * 1.2)
+                # Resize maintaining aspect ratio, then crop to square if needed
+                if orig_width != orig_height:
+                    # Make it square by cropping the center
+                    size = min(orig_width, orig_height)
+                    left = (orig_width - size) // 2
+                    top = (orig_height - size) // 2
+                    img = img.crop((left, top, left + size, top + size))
+                
+                # Resize to larger size for better visibility
+                img_resized = img.resize((new_size, new_size), Image.Resampling.LANCZOS)
+                
+                # Save to bytes
+                from io import BytesIO
+                img_bytes = BytesIO()
+                img_resized.save(img_bytes, format='PNG')
+                img_bytes.seek(0)
+                favicon_base64 = base64.b64encode(img_bytes.read()).decode()
+            except (ImportError, Exception) as e:
+                # Fallback: use original image if PIL not available or resize fails
+                with open(logo_path, "rb") as favicon_file:
+                    favicon_base64 = base64.b64encode(favicon_file.read()).decode()
+            
+            st.markdown(f"""
+                <link rel="icon" type="image/png" sizes="96x96" href="data:image/png;base64,{favicon_base64}">
+                <link rel="shortcut icon" type="image/png" sizes="96x96" href="data:image/png;base64,{favicon_base64}">
                 <link rel="apple-touch-icon" sizes="180x180" href="data:image/png;base64,{favicon_base64}">
+                <style>
+                link[rel="icon"], link[rel="shortcut icon"] {{
+                    size: 96px !important;
+                }}
+                </style>
                 """, unsafe_allow_html=True)
         except Exception:
             # Fallback to file path if base64 encoding fails
             st.markdown(f"""
-            <link rel="icon" type="image/png" sizes="64x64" href="{logo_path}">
-            <link rel="shortcut icon" type="image/png" sizes="64x64" href="{logo_path}">
+            <link rel="icon" type="image/png" sizes="96x96" href="{logo_path}">
+            <link rel="shortcut icon" type="image/png" sizes="96x96" href="{logo_path}">
             <link rel="apple-touch-icon" sizes="180x180" href="{logo_path}">
             """, unsafe_allow_html=True)
     
