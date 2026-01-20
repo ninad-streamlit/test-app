@@ -1250,9 +1250,9 @@ def main():
         st.session_state.mission_example = generate_mission_example()
     
     if not st.session_state.show_agent_builder:
-        # Final attempt: Use inline !important style directly in the element
+        # Use div instead of h2 to avoid Streamlit's heading styles, with inline !important
         st.markdown("""
-        <h2 id="welcome-title-element" style="color: #bfdbfe !important;">Welcome to Denken Labs</h2>
+        <div id="welcome-title-element" style="font-size: 2.25rem; font-weight: 600; color: #bfdbfe !important; margin-bottom: 0.5rem;">Welcome to Denken Labs</div>
         <style>
         /* Use CSS custom properties that change based on theme */
         [data-theme="dark"] #welcome-container {
