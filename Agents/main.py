@@ -1805,24 +1805,17 @@ def main():
                          alt="Denken Labs Logo" />
                 </div>
                 <script>
-                // Aggressively remove any white backgrounds that might be added by Streamlit, especially in dark mode
                 (function() {{
                     function removeWhiteBackgrounds() {{
                         var logoImg = document.querySelector('img[alt="Denken Labs Logo"]');
                         if (logoImg) {{
-                            // Remove background from image itself
                             logoImg.style.background = 'transparent';
                             logoImg.style.backgroundColor = 'transparent';
-                            
-                            // Remove background from all parent elements up to body
                             var parent = logoImg.parentElement;
                             var depth = 0;
                             while (parent && parent !== document.body && depth < 20) {{
-                                // Check computed style to see if there's a white/light background
                                 var computedStyle = window.getComputedStyle(parent);
                                 var bgColor = computedStyle.backgroundColor;
-                                
-                                // If background is white, light gray, or has opacity, make it transparent
                                 if (bgColor && (
                                     bgColor.includes('rgb(255') || 
                                     bgColor.includes('rgb(250') ||
@@ -1835,47 +1828,33 @@ def main():
                                     parent.style.background = 'transparent';
                                     parent.style.backgroundColor = 'transparent';
                                 }} else {{
-                                    // Force transparent anyway in dark mode
                                     if (document.documentElement.getAttribute('data-theme') === 'dark') {{
                                         parent.style.background = 'transparent';
                                         parent.style.backgroundColor = 'transparent';
                                     }}
                                 }}
-                                
                                 parent = parent.parentElement;
                                 depth++;
                             }}
                         }}
                     }}
-                    
-                    // Run immediately
                     removeWhiteBackgrounds();
-                    
-                    // Run after a short delay
                     setTimeout(removeWhiteBackgrounds, 100);
-                    
-                    // Run after DOM is fully loaded
                     if (document.readyState === 'loading') {{
                         document.addEventListener('DOMContentLoaded', removeWhiteBackgrounds);
                     }}
-                    
-                    // Use MutationObserver to watch for DOM changes
                     var observer = new MutationObserver(function(mutations) {{
                         removeWhiteBackgrounds();
                     }});
-                    
                     observer.observe(document.body, {{
                         childList: true,
                         subtree: true,
                         attributes: true,
                         attributeFilter: ['style', 'class']
                     }});
-                    
-                    // Also watch for theme changes
                     var themeObserver = new MutationObserver(function(mutations) {{
                         removeWhiteBackgrounds();
                     }});
-                    
                     if (document.documentElement) {{
                         themeObserver.observe(document.documentElement, {{
                             attributes: true,
