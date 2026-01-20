@@ -2302,6 +2302,8 @@ def main():
                             st.markdown("<div style='margin-bottom: 15px;'></div>", unsafe_allow_html=True)
                 with col_pdf:
                     st.markdown("<br>", unsafe_allow_html=True)  # Spacing
+                    # Try reportlab first, then fpdf2 as fallback
+                    pdf_generated = False
                     if REPORTLAB_AVAILABLE:
                         try:
                             # Generate PDF using reportlab
