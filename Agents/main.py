@@ -1264,40 +1264,92 @@ def main():
     }
     </style>
     <script>
-    // Force agent names to be light in dark mode - use JavaScript with aggressive DOM manipulation
+    // Inject dynamic CSS style tag for agent names with maximum specificity
+    function injectAgentNameStyles() {
+        var styleId = 'agent-name-dark-mode-styles';
+        var existingStyle = document.getElementById(styleId);
+        if (existingStyle) {
+            existingStyle.remove();
+        }
+        
+        var style = document.createElement('style');
+        style.id = styleId;
+        style.textContent = `
+            [data-theme="dark"] [id^="agent-name-"],
+            [data-theme="dark"] [id^="agent-name-"] *,
+            [data-theme="dark"] [data-agent-name="true"],
+            [data-theme="dark"] [data-agent-name="true"] *,
+            [data-theme="dark"] [id^="agent-name-"] strong,
+            [data-theme="dark"] [data-agent-name="true"] strong,
+            [data-theme="dark"] div.agent-name,
+            [data-theme="dark"] div.agent-name *,
+            [data-theme="dark"] div.agent-name strong,
+            [data-theme="dark"] .agent-name,
+            [data-theme="dark"] .agent-name *,
+            [data-theme="dark"] .agent-name strong {
+                color: #ffffff !important;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    // Force agent names to be bright white in dark mode - completely new approach
     function forceAgentNamesLight() {
         var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        
+        // Inject CSS styles first
+        injectAgentNameStyles();
+        
         if (!isDark) return;
         
-        // Target all agent names by ID pattern or class
-        var agentNames = document.querySelectorAll('[id^="agent-name-"], .agent-name, div.agent-name');
-        agentNames.forEach(function(el) {
-            // Apply light blue color with maximum priority
-            el.style.color = '#bfdbfe';
-            el.style.setProperty('color', '#bfdbfe', 'important');
-            
-            // Also ensure the style attribute includes it
-            var currentStyle = el.getAttribute('style') || '';
-            currentStyle = currentStyle.replace(/color[^;]*;?/gi, '');
-            el.setAttribute('style', currentStyle + ' color: #bfdbfe !important;');
-            
-            // Apply to all children (especially strong tags)
-            var children = el.querySelectorAll('*');
-            children.forEach(function(child) {
-                child.style.color = '#bfdbfe';
-                child.style.setProperty('color', '#bfdbfe', 'important');
+        // Target all agent names by ID pattern, data attribute, or class
+        var selectors = [
+            '[id^="agent-name-"]',
+            '[data-agent-name="true"]',
+            '.agent-name',
+            'div.agent-name'
+        ];
+        
+        selectors.forEach(function(selector) {
+            var agentNames = document.querySelectorAll(selector);
+            agentNames.forEach(function(el) {
+                // Apply pure white color with maximum priority using multiple methods
+                el.style.cssText = (el.style.cssText || '').replace(/color[^;]*;?/gi, '') + ' color: #ffffff !important;';
+                el.style.setProperty('color', '#ffffff', 'important');
+                el.style.color = '#ffffff';
+                el.setAttribute('style', (el.getAttribute('style') || '').replace(/color[^;]*;?/gi, '') + ' color: #ffffff !important;');
+                
+                // Force reflow
+                var force = el.offsetHeight;
+                
+                // Apply to all children (especially strong tags) with pure white
+                var children = el.querySelectorAll('*');
+                children.forEach(function(child) {
+                    child.style.cssText = (child.style.cssText || '').replace(/color[^;]*;?/gi, '') + ' color: #ffffff !important;';
+                    child.style.setProperty('color', '#ffffff', 'important');
+                    child.style.color = '#ffffff';
+                });
             });
         });
     }
     
+    // Inject styles immediately
+    injectAgentNameStyles();
+    
     // Run immediately and continuously for agent names
     forceAgentNamesLight();
-    setInterval(forceAgentNamesLight, 50); // Check every 50ms
+    setTimeout(forceAgentNamesLight, 0);
+    setTimeout(forceAgentNamesLight, 10);
+    setTimeout(forceAgentNamesLight, 25);
+    setTimeout(forceAgentNamesLight, 50);
+    setInterval(forceAgentNamesLight, 25); // Check every 25ms (faster than before)
     
     // Watch for theme changes
     var agentNameThemeObserver = new MutationObserver(function(mutations) {
         mutations.forEach(function(mutation) {
             if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
+                injectAgentNameStyles();
+                setTimeout(forceAgentNamesLight, 0);
                 setTimeout(forceAgentNamesLight, 10);
             }
         });
