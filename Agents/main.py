@@ -1053,42 +1053,10 @@ def main():
         color: #e2e8f0 !important;
     }
     
-    /* Story content - match Q&A section styling */
-    /* Need to override inline style with maximum specificity */
-    [data-theme="dark"] .story-content,
-    [data-theme="dark"] div.story-content,
-    [data-theme="dark"] .story-content[style],
-    [data-theme="dark"] div.story-content[style],
-    [data-theme="dark"] .story-content[style*="background"],
-    [data-theme="dark"] div.story-content[style*="background"] {
-        background-color: #1e293b !important; /* Dark background that blends with black background */
-        border-left-color: #6b46c1 !important; /* Purple border like Q&A */
-    }
-    
-    /* Match Q&A answer div structure exactly - target inner div with padding-left */
-    [data-theme="dark"] .story-content > div[style*="padding-left"],
-    [data-theme="dark"] div.story-content > div[style*="padding-left"],
-    [data-theme="dark"] .story-content > div[style*="padding-left"] *,
-    [data-theme="dark"] div.story-content > div[style*="padding-left"] *,
-    [data-theme="dark"] .story-content *,
-    [data-theme="dark"] .story-content p,
-    [data-theme="dark"] .story-content span,
-    [data-theme="dark"] .story-content div,
-    [data-theme="dark"] .story-content br,
-    [data-theme="dark"] .story-content strong,
-    [data-theme="dark"] .story-content em,
-    [data-theme="dark"] div.story-content *,
-    [data-theme="dark"] div.story-content p,
-    [data-theme="dark"] div.story-content span,
-    [data-theme="dark"] div.story-content div,
-    [data-theme="dark"] div.story-content br,
-    [data-theme="dark"] div.story-content strong,
-    [data-theme="dark"] div.story-content em,
-    [data-theme="dark"] .story-text,
-    [data-theme="dark"] .story-text *,
-    [data-theme="dark"] .story-content .story-text {
-        color: #e2e8f0 !important; /* Use exact same color as Q&A answers */
-        background-color: transparent !important; /* Transparent background for nested elements */
+    /* Story content - use Streamlit default container styling (adapts to light/dark mode) */
+    /* Keep purple border for visual consistency */
+    .story-content {
+        border-left-color: #6b46c1 !important; /* Purple border for visual consistency */
     }
     
     /* Light blue text for specific elements in dark mode - use ID for maximum specificity */
@@ -1431,49 +1399,8 @@ def main():
         welcomeStyleObserver.observe(welcomeElement, { attributes: true, attributeFilter: ['style'] });
     }
     
-    // Force story content to match Q&A answer color exactly - aggressive approach
-    function forceStoryTransparent() {
-        // Find all story content divs
-        var storyDivs = document.querySelectorAll('.story-content, div.story-content');
-        storyDivs.forEach(function(div) {
-            if (div) {
-                // Set background same as Q&A
-                div.style.setProperty('background-color', '#1e293b', 'important');
-                div.style.setProperty('border-left-color', '#6b46c1', 'important');
-                
-                // Apply Q&A answer color to ALL elements inside story content
-                // This ensures every text element matches the Q&A answer color exactly
-                var allElements = div.querySelectorAll('*');
-                allElements.forEach(function(el) {
-                    // Use exact same color as Q&A answers: #e2e8f0
-                    el.style.setProperty('color', '#e2e8f0', 'important');
-                    el.style.color = '#e2e8f0';
-                    el.setAttribute('style', (el.getAttribute('style') || '').replace(/color[^;]*;?/gi, '') + ' color: #e2e8f0 !important;');
-                    el.style.setProperty('background-color', 'transparent', 'important');
-                    el.style.removeProperty('opacity');
-                    el.style.removeProperty('filter');
-                });
-                
-                // Also set color directly on the story div itself
-                div.style.setProperty('color', '#e2e8f0', 'important');
-                div.style.color = '#e2e8f0';
-            }
-        });
-    }
-    
-    // Run immediately and continuously
-    forceStoryTransparent();
-    setInterval(forceStoryTransparent, 100);
-    
-    // Also watch for theme changes
-    var themeObserver = new MutationObserver(function(mutations) {
-        mutations.forEach(function(mutation) {
-            if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
-                forceStoryTransparent();
-            }
-        });
-    });
-    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    // Story content now uses Streamlit default container styling (adapts to light/dark mode)
+    // No need to force colors - let Streamlit handle theme adaptation
     
     // ULTRA AGGRESSIVE button styling - intercept ALL style changes
     function forcePurpleButton(btn) {
@@ -2303,6 +2230,66 @@ def main():
                                 else:
                                     story.append(Spacer(1, 0.2*inch))
                             
+                            # Add agent descriptions section before story
+                            if st.session_state.created_bots:
+                                story.append(Spacer(1, 0.3*inch))
+                                
+                                # Agent descriptions section title
+                                agents_title_style = ParagraphStyle(
+                                    'AgentsTitle',
+                                    parent=getSampleStyleSheet()['Heading2'],
+                                    fontSize=14,
+                                    textColor='#2563eb',
+                                    spaceAfter=15,
+                                    spaceBefore=10
+                                )
+                                story.append(Paragraph("🤖 The Team", agents_title_style))
+                                story.append(Spacer(1, 0.15*inch))
+                                
+                                # Agent description style
+                                agent_name_style = ParagraphStyle(
+                                    'AgentName',
+                                    parent=getSampleStyleSheet()['Normal'],
+                                    fontSize=11,
+                                    textColor='#1e40af',
+                                    spaceAfter=5,
+                                    leftIndent=0,
+                                    fontName='Helvetica-Bold'
+                                )
+                                
+                                agent_desc_style = ParagraphStyle(
+                                    'AgentDesc',
+                                    parent=getSampleStyleSheet()['Normal'],
+                                    fontSize=10,
+                                    textColor='#475569',
+                                    spaceAfter=10,
+                                    leftIndent=15
+                                )
+                                
+                                # Add each agent's description
+                                for bot in st.session_state.created_bots:
+                                    agent_name = bot.get('name', 'Agent')
+                                    agent_number = bot.get('number', '')
+                                    agent_desc = bot.get('description', '')
+                                    agent_character = bot.get('character', '')
+                                    
+                                    # Agent name with number
+                                    name_text = f"Agent #{agent_number}: {agent_name}" if agent_number else agent_name
+                                    story.append(Paragraph(name_text.replace('\n', '<br/>'), agent_name_style))
+                                    
+                                    # Agent description
+                                    if agent_desc:
+                                        story.append(Paragraph(agent_desc.replace('\n', '<br/>'), agent_desc_style))
+                                    
+                                    # Agent character profile
+                                    if agent_character:
+                                        character_text = f"<i>{agent_character}</i>"
+                                        story.append(Paragraph(character_text.replace('\n', '<br/>'), agent_desc_style))
+                                    
+                                    story.append(Spacer(1, 0.1*inch))
+                                
+                                story.append(Spacer(1, 0.3*inch))
+                            
                             # Add story content (split by paragraphs)
                             story_paragraphs = st.session_state.mission_story.split('\n\n')
                             for para in story_paragraphs:
@@ -2401,6 +2388,49 @@ def main():
                                 else:
                                     pdf.ln(5)
                             
+                            # Add agent descriptions section before story
+                            if st.session_state.created_bots:
+                                pdf.ln(8)
+                                
+                                # Agent descriptions section title
+                                pdf.set_font("Arial", "B", 14)
+                                pdf.set_text_color(37, 99, 235)  # Blue color #2563eb
+                                pdf.cell(0, 10, "🤖 The Team", ln=True, align='L')
+                                pdf.ln(5)
+                                
+                                # Add each agent's description
+                                pdf.set_text_color(0, 0, 0)  # Reset to black
+                                for bot in st.session_state.created_bots:
+                                    agent_name = bot.get('name', 'Agent')
+                                    agent_number = bot.get('number', '')
+                                    agent_desc = bot.get('description', '')
+                                    agent_character = bot.get('character', '')
+                                    
+                                    # Agent name with number
+                                    pdf.set_font("Arial", "B", 11)
+                                    pdf.set_text_color(30, 64, 175)  # Dark blue #1e40af
+                                    name_text = f"Agent #{agent_number}: {agent_name}" if agent_number else agent_name
+                                    name_clean = name_text.encode('latin-1', 'replace').decode('latin-1')
+                                    pdf.cell(0, 8, name_clean, ln=True, align='L')
+                                    
+                                    # Agent description
+                                    pdf.set_font("Arial", size=10)
+                                    pdf.set_text_color(71, 85, 105)  # Gray #475569
+                                    if agent_desc:
+                                        desc_clean = agent_desc.encode('latin-1', 'replace').decode('latin-1')
+                                        pdf.multi_cell(0, 7, desc_clean, align='L')
+                                    
+                                    # Agent character profile
+                                    if agent_character:
+                                        pdf.set_font("Arial", "I", 10)
+                                        char_clean = agent_character.encode('latin-1', 'replace').decode('latin-1')
+                                        pdf.multi_cell(0, 7, char_clean, align='L')
+                                    
+                                    pdf.ln(3)
+                                
+                                pdf.ln(5)
+                                pdf.set_text_color(0, 0, 0)  # Reset to black
+                            
                             # Story content
                             pdf.set_font("Arial", size=12)
                             story_text = st.session_state.mission_story.replace('\n\n', '\n')
@@ -2457,7 +2487,7 @@ def main():
                         except Exception as e:
                             st.warning(f"PDF generation error: {str(e)}")
                 
-                # Display story content - use EXACT same HTML structure as Q&A answer div
+                # Display story content - use Streamlit container styling like agent descriptions
                 # Convert story text to HTML - handle both single and double newlines
                 story_text = st.session_state.mission_story
                 # Replace double newlines with paragraph breaks
@@ -2467,19 +2497,19 @@ def main():
                     if para.strip():
                         # Replace single newlines within paragraphs with line breaks
                         para = para.replace('\n', '<br>')
-                        # Wrap each paragraph in a div with EXACT same styling as Q&A answer - use same padding structure
+                        # Wrap each paragraph in a div
                         story_html_parts.append(f'{para}<br><br>')
                 story_html = ''.join(story_html_parts).rstrip('<br><br>')
                 
-                # Use EXACT same HTML structure and styling as Q&A answer div (line 2548)
-                # The Q&A answer uses: <div style='color: #e2e8f0; padding-left: 10px;'>
-                st.markdown(f"""
-                <div class="story-content" style='background-color: #1e293b; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #6b46c1;'>
-                    <div style='color: #e2e8f0 !important; padding-left: 10px;'>
-                        {story_html}
+                # Use Streamlit container styling (same as agent descriptions) - adapts to light/dark mode
+                with st.container():
+                    st.markdown(f"""
+                    <div class="story-content" style='padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #6b46c1;'>
+                        <div style='padding-left: 10px;'>
+                            {story_html}
+                        </div>
                     </div>
-                </div>
-                """, unsafe_allow_html=True)
+                    """, unsafe_allow_html=True)
                 
                 # Q&A Section
                 st.markdown("<br>", unsafe_allow_html=True)
@@ -2555,20 +2585,21 @@ def main():
                             except Exception as e:
                                 st.error(f"Error generating answer: {str(e)}")
                 
-                # Display Q&A history
+                # Display Q&A history - use Streamlit container styling like agent descriptions
                 if st.session_state.story_qa_history:
                     st.markdown("<br>", unsafe_allow_html=True)
                     for idx, qa in enumerate(st.session_state.story_qa_history):
-                        st.markdown(f"""
-                        <div style='background-color: #1e293b; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #6b46c1;'>
-                            <div style='font-weight: bold; color: #a78bfa; margin-bottom: 8px;'>
-                                ❓ Question: {qa['question']}
+                        with st.container():
+                            st.markdown(f"""
+                            <div style='padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #6b46c1;'>
+                                <div style='font-weight: bold; margin-bottom: 8px;'>
+                                    ❓ Question: {qa['question']}
+                                </div>
+                                <div style='padding-left: 10px;'>
+                                    💡 {qa['answer']}
+                                </div>
                             </div>
-                            <div style='color: #e2e8f0; padding-left: 10px;'>
-                                💡 {qa['answer']}
-                            </div>
-                        </div>
-                        """, unsafe_allow_html=True)
+                            """, unsafe_allow_html=True)
     
     st.markdown("</div>", unsafe_allow_html=True)
 
