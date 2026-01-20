@@ -18,25 +18,41 @@ def get_openai_api_key():
         import streamlit as st
         
         # Try to get from Streamlit secrets (for Streamlit Cloud)
-        if hasattr(st, 'secrets') and st.secrets:
-            try:
-                # Try direct dictionary access first (most common in Streamlit Cloud)
-                api_key = st.secrets['OPENAI_API_KEY']
-            except (KeyError, AttributeError, TypeError):
-                # Key not found or wrong type - try .get() method
+        if hasattr(st, 'secrets'):
+            secrets_obj = st.secrets
+            if secrets_obj:
+                # Try multiple access methods
+                # Method 1: Direct dictionary access
                 try:
-                    api_key = st.secrets.get('OPENAI_API_KEY', None)
-                except (AttributeError, TypeError):
+                    api_key = secrets_obj['OPENAI_API_KEY']
+                except (KeyError, AttributeError, TypeError):
                     pass
-            
-            # Also try attribute-style access as fallback
-            if not api_key:
-                try:
-                    if hasattr(st.secrets, 'OPENAI_API_KEY'):
-                        api_key = getattr(st.secrets, 'OPENAI_API_KEY')
-                except (AttributeError, TypeError):
-                    pass
-    except (ImportError, AttributeError, RuntimeError):
+                
+                # Method 2: .get() method
+                if not api_key:
+                    try:
+                        api_key = secrets_obj.get('OPENAI_API_KEY', None)
+                    except (AttributeError, TypeError):
+                        pass
+                
+                # Method 3: Attribute-style access
+                if not api_key:
+                    try:
+                        if hasattr(secrets_obj, 'OPENAI_API_KEY'):
+                            api_key = getattr(secrets_obj, 'OPENAI_API_KEY')
+                    except (AttributeError, TypeError):
+                        pass
+                
+                # Method 4: Try accessing as dict with __getitem__
+                if not api_key:
+                    try:
+                        if isinstance(secrets_obj, dict):
+                            api_key = secrets_obj.get('OPENAI_API_KEY')
+                        elif hasattr(secrets_obj, '__getitem__'):
+                            api_key = secrets_obj.__getitem__('OPENAI_API_KEY')
+                    except (KeyError, AttributeError, TypeError):
+                        pass
+    except (ImportError, AttributeError, RuntimeError) as e:
         # Streamlit not available or not initialized - fall through to env vars
         pass
     except Exception:
