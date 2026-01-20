@@ -54,19 +54,26 @@ def play_sound(sound_type):
             
             // Function to enable audio (called by user interaction)
             window.enableDenkenAudio = async function() {
-                window.denkenAudioSystem.enabled = true;
-                window.denkenAudioSystem.userInteracted = true;
-                const context = initAudioContext();
-                if (context && context.state === 'suspended') {
-                    try {
-                        await context.resume();
-                        console.log('Audio enabled and context resumed');
-                        // Hide enable button if it exists
-                        const btn = document.getElementById('enable-audio-btn');
-                        if (btn) btn.style.display = 'none';
-                    } catch(e) {
-                        console.log('Failed to resume audio context:', e);
+                try {
+                    console.log('enableDenkenAudio called');
+                    window.denkenAudioSystem.enabled = true;
+                    window.denkenAudioSystem.userInteracted = true;
+                    const context = initAudioContext();
+                    if (!context) {
+                        console.error('Failed to create audio context');
+                        throw new Error('Failed to create audio context');
                     }
+                    console.log('Audio context state:', context.state);
+                    if (context.state === 'suspended') {
+                        await context.resume();
+                        console.log('Audio enabled and context resumed, new state:', context.state);
+                    } else {
+                        console.log('Audio context already running');
+                    }
+                    return context;
+                } catch(e) {
+                    console.error('Error in enableDenkenAudio:', e);
+                    throw e;
                 }
             };
             
@@ -2615,19 +2622,79 @@ def main():
         
         # Add enable sounds button if audio not enabled
         st.markdown("""
-        <div id="enable-audio-btn" style="text-align: center; margin: 10px 0;">
-            <button onclick="window.enableDenkenAudio && window.enableDenkenAudio(); this.style.display='none';" 
-                    style="background-color: #4CAF50; color: white; border: none; padding: 8px 16px; 
-                           border-radius: 5px; cursor: pointer; font-size: 14px;">
+        <div id="enable-audio-container" style="text-align: center; margin: 10px 0;">
+            <button id="enable-audio-btn" 
+                    style="background-color: #4CAF50; color: white; border: none; padding: 10px 20px; 
+                           border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold;">
                 🔊 Enable Sounds
             </button>
+            <div id="audio-status" style="margin-top: 5px; font-size: 12px; color: #666;"></div>
         </div>
         <script>
-        // Hide button if audio is already enabled
-        if (window.denkenAudioSystem && window.denkenAudioSystem.enabled) {
+        (function() {
             const btn = document.getElementById('enable-audio-btn');
-            if (btn) btn.style.display = 'none';
-        }
+            const status = document.getElementById('audio-status');
+            
+            if (!btn) return;
+            
+            // Hide button if audio is already enabled
+            if (window.denkenAudioSystem && window.denkenAudioSystem.enabled) {
+                btn.style.display = 'none';
+                if (status) status.textContent = '✅ Sounds enabled';
+                return;
+            }
+            
+            // Add click handler
+            btn.addEventListener('click', async function() {
+                try {
+                    status.textContent = '🔄 Enabling sounds...';
+                    btn.disabled = true;
+                    btn.style.opacity = '0.6';
+                    
+                    // Call enable function
+                    if (window.enableDenkenAudio) {
+                        await window.enableDenkenAudio();
+                        status.textContent = '✅ Sounds enabled!';
+                        btn.textContent = '✅ Sounds Enabled';
+                        setTimeout(() => {
+                            btn.style.display = 'none';
+                        }, 2000);
+                    } else {
+                        // Fallback: try to initialize directly
+                        if (!window.denkenAudioSystem) {
+                            status.textContent = '❌ Audio system not initialized. Please refresh the page.';
+                            return;
+                        }
+                        
+                        // Initialize audio context
+                        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                        if (!AudioContextClass) {
+                            status.textContent = '❌ Web Audio API not supported in this browser.';
+                            return;
+                        }
+                        
+                        window.denkenAudioSystem.context = new AudioContextClass();
+                        if (window.denkenAudioSystem.context.state === 'suspended') {
+                            await window.denkenAudioSystem.context.resume();
+                        }
+                        
+                        window.denkenAudioSystem.enabled = true;
+                        window.denkenAudioSystem.userInteracted = true;
+                        
+                        status.textContent = '✅ Sounds enabled!';
+                        btn.textContent = '✅ Sounds Enabled';
+                        setTimeout(() => {
+                            btn.style.display = 'none';
+                        }, 2000);
+                    }
+                } catch(e) {
+                    console.error('Error enabling audio:', e);
+                    status.textContent = '❌ Error: ' + e.message;
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                }
+            });
+        })();
         </script>
         """, unsafe_allow_html=True)
         
