@@ -1250,22 +1250,61 @@ def main():
         st.session_state.mission_example = generate_mission_example()
     
     if not st.session_state.show_agent_builder:
-        # Inject inline style tag right before element for maximum CSS specificity
+        # Use a wrapper div with inline style that changes based on theme via JavaScript
         st.markdown("""
-        <style>
-        /* Inject style directly for welcome title - highest specificity */
-        [data-theme="dark"] #welcome-title-header {
-            color: #bfdbfe !important;
-        }
-        [data-theme="dark"] #welcome-title-header * {
-            color: #bfdbfe !important;
-        }
-        /* Also use attribute selector for extra specificity */
-        [data-theme="dark"] h2#welcome-title-header.welcome-title[data-light-color] {
-            color: #bfdbfe !important;
-        }
-        </style>
-        <h2 id="welcome-title-header" class="welcome-title" data-light-color="#bfdbfe" style="color: #1e293b;">Welcome to Denken Labs</h2>
+        <div id="welcome-wrapper" style="position: relative;">
+            <h2 id="welcome-title-header" class="welcome-title" style="color: #1e293b; transition: color 0.2s;">Welcome to Denken Labs</h2>
+        </div>
+        <script>
+        (function() {
+            function updateWelcomeColor() {
+                var welcomeEl = document.getElementById('welcome-title-header');
+                if (!welcomeEl) return;
+                
+                var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                if (isDark) {
+                    // Force light blue color using multiple methods
+                    welcomeEl.style.cssText = welcomeEl.style.cssText.replace(/color[^;]*;?/gi, '') + ' color: #bfdbfe !important;';
+                    welcomeEl.setAttribute('data-dark-color', '#bfdbfe');
+                    
+                    // Also try direct manipulation
+                    var computedStyle = window.getComputedStyle(welcomeEl);
+                    if (computedStyle.color !== 'rgb(191, 219, 254)') {
+                        welcomeEl.style.removeProperty('color');
+                        welcomeEl.style.setProperty('color', '#bfdbfe', 'important');
+                    }
+                }
+            }
+            
+            // Run immediately
+            updateWelcomeColor();
+            
+            // Run on interval
+            setInterval(updateWelcomeColor, 25);
+            
+            // Watch for theme changes
+            var observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.attributeName === 'data-theme') {
+                        setTimeout(updateWelcomeColor, 5);
+                    }
+                });
+            });
+            observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+            
+            // Watch for the element being added
+            var elementObserver = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    mutation.addedNodes.forEach(function(node) {
+                        if (node.id === 'welcome-title-header' || (node.querySelector && node.querySelector('#welcome-title-header'))) {
+                            setTimeout(updateWelcomeColor, 5);
+                        }
+                    });
+                });
+            });
+            elementObserver.observe(document.body, { childList: true, subtree: true });
+        })();
+        </script>
         """, unsafe_allow_html=True)
         st.markdown('<div class="tagline-text">**Get ready for an exiting mission**</div>', unsafe_allow_html=True)
         
