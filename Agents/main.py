@@ -854,9 +854,15 @@ def main():
     # Set page config with logo as favicon
     config = STREAMLIT_CONFIG.copy()
     # Use relative path for logo (works locally and on Streamlit Cloud)
-    # Try multiple possible paths for the logo
+    # Try multiple possible paths for the logo (prioritize transparent background versions)
     logo_paths = [
+        # Try transparent background logo first (favicon_bot.png likely has transparent background)
+        os.path.join(os.path.dirname(__file__), "favicon_bot.png"),
+        os.path.join(os.path.dirname(__file__), "bot.png"),
+        # Then try logo files (check if any have transparent background)
         os.path.join(os.path.dirname(__file__), "agents", "Logo-DenkenLabs.png"),
+        os.path.join(os.path.dirname(__file__), "Logo-DenkenLabs.png"),
+        os.path.join(os.path.dirname(__file__), "logo_DenkenLabs.png"),
         os.path.join(os.path.dirname(__file__), "Agents", "Logo-DenkenLabs.png"),
         os.path.join(os.path.dirname(__file__), "Agents", "agents", "Logo-DenkenLabs.png"),
     ]
