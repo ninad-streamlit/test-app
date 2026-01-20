@@ -949,26 +949,32 @@ def main():
     # Inject meta tags immediately using st.markdown
     st.markdown(meta_tags_js, unsafe_allow_html=True)
     
-    # Add favicon link to HTML head for better control
+    # Add favicon link to HTML head for better control with proper sizing
     if logo_path:
-        st.markdown(f"""
-        <link rel="icon" type="image/png" href="{logo_path}">
-        <link rel="shortcut icon" type="image/png" href="{logo_path}">
-        <link rel="apple-touch-icon" href="{logo_path}">
-        """, unsafe_allow_html=True)
+        # Use base64 encoding for favicon to ensure it loads and can be sized properly
+        import base64
+        try:
+            with open(logo_path, "rb") as favicon_file:
+                favicon_base64 = base64.b64encode(favicon_file.read()).decode()
+                st.markdown(f"""
+                <link rel="icon" type="image/png" sizes="64x64" href="data:image/png;base64,{favicon_base64}">
+                <link rel="shortcut icon" type="image/png" sizes="64x64" href="data:image/png;base64,{favicon_base64}">
+                <link rel="apple-touch-icon" sizes="180x180" href="data:image/png;base64,{favicon_base64}">
+                """, unsafe_allow_html=True)
+        except Exception:
+            # Fallback to file path if base64 encoding fails
+            st.markdown(f"""
+            <link rel="icon" type="image/png" sizes="64x64" href="{logo_path}">
+            <link rel="shortcut icon" type="image/png" sizes="64x64" href="{logo_path}">
+            <link rel="apple-touch-icon" sizes="180x180" href="{logo_path}">
+            """, unsafe_allow_html=True)
     
     # Mobile-responsive CSS with minimal spacing and logo-matching colors
     st.markdown("""
     <style>
-    /* Favicon styling - try to make it appear larger in browser */
-    link[rel="icon"],
-    link[rel="shortcut icon"] {
-        size: 64px !important;
-    }
-    </style>
-    <style>
-    /* Ensure logo images have transparent backgrounds */
+    /* Ensure logo images have transparent backgrounds and remove any white backgrounds */
     img[alt="Denken Labs Logo"],
+    img[alt="Denken Labs Logo"] ~ *,
     .stImage img,
     .stImage > div,
     .stImage > div > img,
@@ -977,13 +983,25 @@ def main():
     div[data-testid="stImage"] > div > img {
         background: transparent !important;
         background-color: transparent !important;
+        mix-blend-mode: normal !important;
     }
     
-    /* Remove any background from logo container */
+    /* Remove any background from logo container and parent elements */
     .logo-container,
-    .logo-container > div {
+    .logo-container > div,
+    .logo-container > div > div,
+    div:has(img[alt="Denken Labs Logo"]),
+    div:has(img[alt="Denken Labs Logo"]) > div {
         background: transparent !important;
         background-color: transparent !important;
+    }
+    
+    /* Force transparent background on the logo image itself using CSS filters if needed */
+    img[alt="Denken Labs Logo"] {
+        background: transparent !important;
+        background-color: transparent !important;
+        -webkit-background-clip: padding-box !important;
+        background-clip: padding-box !important;
     }
     </style>
     <style>
@@ -1360,8 +1378,8 @@ def main():
                     // Method 4: Inline style manipulation
                     var inlineStyle = el.getAttribute('style') || '';
                     // Remove any color declarations
-                    inlineStyle = inlineStyle.replace(/color\s*:[^;]*;?/gi, '');
-                    inlineStyle = inlineStyle.replace(/--agent-name-color\s*:[^;]*;?/gi, '');
+                    inlineStyle = inlineStyle.replace(/color\\s*:[^;]*;?/gi, '');
+                    inlineStyle = inlineStyle.replace(/--agent-name-color\\s*:[^;]*;?/gi, '');
                     // Add our bright white color
                     inlineStyle += ' --agent-name-color: #ffffff !important;';
                     inlineStyle += ' color: #ffffff !important;';
@@ -1761,11 +1779,36 @@ def main():
             with open(logo_path, "rb") as img_file:
                 logo_base64 = base64.b64encode(img_file.read()).decode()
                 st.markdown(f"""
-                <div style="text-align: center; background: transparent !important;">
+                <div style="text-align: center; background: transparent !important; background-color: transparent !important; padding: 0; margin: 0;">
                     <img src="data:image/png;base64,{logo_base64}" 
-                         style="max-width: 280px; width: 100%; height: auto; background: transparent !important; background-color: transparent !important;" 
+                         style="max-width: 280px; width: 100%; height: auto; 
+                                background: transparent !important; 
+                                background-color: transparent !important;
+                                display: block;
+                                margin: 0 auto;
+                                -webkit-background-clip: padding-box;
+                                background-clip: padding-box;" 
                          alt="Denken Labs Logo" />
                 </div>
+                <script>
+                // Aggressively remove any white backgrounds that might be added by Streamlit
+                (function() {{
+                    setTimeout(function() {{
+                        var logoImg = document.querySelector('img[alt="Denken Labs Logo"]');
+                        if (logoImg) {{
+                            logoImg.style.background = 'transparent';
+                            logoImg.style.backgroundColor = 'transparent';
+                            // Remove background from all parent elements
+                            var parent = logoImg.parentElement;
+                            while (parent && parent !== document.body) {{
+                                parent.style.background = 'transparent';
+                                parent.style.backgroundColor = 'transparent';
+                                parent = parent.parentElement;
+                            }}
+                        }}
+                    }}, 100);
+                }})();
+                </script>
                 """, unsafe_allow_html=True)
         else:
             # Debug: show which paths were checked
