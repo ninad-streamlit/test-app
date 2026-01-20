@@ -13,47 +13,35 @@ def get_openai_api_key():
     """Get OpenAI API key from Streamlit secrets or environment variables."""
     api_key = None
     
-    # Try Streamlit secrets first (for Streamlit Cloud)
+    # Try Streamlit secrets first (for Streamlit Cloud) - using exact pattern from auth.py
     try:
         import streamlit as st
         
         # Try to get from Streamlit secrets (for Streamlit Cloud)
-        if hasattr(st, 'secrets'):
-            secrets_obj = st.secrets
-            if secrets_obj:
-                # Try multiple access methods
-                # Method 1: Direct dictionary access
+        if hasattr(st, 'secrets') and st.secrets:
+            try:
+                from streamlit.runtime.secrets import StreamlitSecretNotFoundError
                 try:
-                    api_key = secrets_obj['OPENAI_API_KEY']
-                except (KeyError, AttributeError, TypeError):
-                    pass
-                
-                # Method 2: .get() method
-                if not api_key:
+                    # Try direct access first (Streamlit Cloud format) - same pattern as auth.py
+                    api_key = st.secrets['OPENAI_API_KEY']
+                except (StreamlitSecretNotFoundError, KeyError, AttributeError, RuntimeError):
+                    # Secrets file not found (local dev) or key missing - try .get() method
                     try:
-                        api_key = secrets_obj.get('OPENAI_API_KEY', None)
-                    except (AttributeError, TypeError):
+                        api_key = st.secrets.get('OPENAI_API_KEY', None)
+                    except (StreamlitSecretNotFoundError, AttributeError, TypeError, RuntimeError):
+                        # Secrets not available at all
                         pass
-                
-                # Method 3: Attribute-style access
-                if not api_key:
+            except ImportError:
+                # StreamlitSecretNotFoundError not available in this version, try without it
+                try:
+                    api_key = st.secrets['OPENAI_API_KEY']
+                except (KeyError, AttributeError, RuntimeError):
                     try:
-                        if hasattr(secrets_obj, 'OPENAI_API_KEY'):
-                            api_key = getattr(secrets_obj, 'OPENAI_API_KEY')
-                    except (AttributeError, TypeError):
+                        api_key = st.secrets.get('OPENAI_API_KEY', None)
+                    except (AttributeError, TypeError, RuntimeError):
                         pass
-                
-                # Method 4: Try accessing as dict with __getitem__
-                if not api_key:
-                    try:
-                        if isinstance(secrets_obj, dict):
-                            api_key = secrets_obj.get('OPENAI_API_KEY')
-                        elif hasattr(secrets_obj, '__getitem__'):
-                            api_key = secrets_obj.__getitem__('OPENAI_API_KEY')
-                    except (KeyError, AttributeError, TypeError):
-                        pass
-    except (ImportError, AttributeError, RuntimeError) as e:
-        # Streamlit not available or not initialized - fall through to env vars
+    except (AttributeError, KeyError, TypeError, ImportError, RuntimeError):
+        # Streamlit secrets not available or not initialized
         pass
     except Exception:
         # Catch any other unexpected errors and fall through to env vars
@@ -67,7 +55,14 @@ def get_openai_api_key():
     if not api_key:
         raise ValueError("OPENAI_API_KEY environment variable is not set. Please add it to your .env file or Streamlit Cloud secrets.")
     
-    return str(api_key).strip()
+    # Ensure we return a string and strip whitespace
+    api_key = str(api_key).strip()
+    
+    # Additional validation - make sure it's not empty after stripping
+    if not api_key:
+        raise ValueError("OPENAI_API_KEY is empty. Please check your Streamlit Cloud secrets or .env file.")
+    
+    return api_key
 
 # For backward compatibility, try to get it at import time if possible
 # But don't raise error if Streamlit isn't initialized yet
