@@ -619,6 +619,31 @@ def main():
         font-weight: 500 !important;
     }
     
+    /* Story title and author in dark mode - make them visible */
+    [data-theme="dark"] .story-title,
+    [data-theme="dark"] .story-title * {
+        color: #ffffff !important;
+    }
+    
+    [data-theme="dark"] .story-author,
+    [data-theme="dark"] .story-author * {
+        color: #e2e8f0 !important;
+    }
+    
+    /* Story content in dark mode - make background darker and text white */
+    [data-theme="dark"] .story-content {
+        background-color: #1e293b !important; /* Dark blue-gray background */
+        color: #ffffff !important;
+    }
+    
+    [data-theme="dark"] .story-content *,
+    [data-theme="dark"] .story-content p,
+    [data-theme="dark"] .story-content span,
+    [data-theme="dark"] .story-content div,
+    [data-theme="dark"] .story-content br {
+        color: #ffffff !important;
+    }
+    
     /* Override any Streamlit default dark mode text colors */
     [data-theme="dark"] p,
     [data-theme="dark"] span,
