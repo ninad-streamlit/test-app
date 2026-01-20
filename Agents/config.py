@@ -40,6 +40,24 @@ def get_openai_api_key():
                         api_key = st.secrets.get('OPENAI_API_KEY', None)
                     except (AttributeError, TypeError, RuntimeError):
                         pass
+            
+            # Additional fallback: try attribute-style access
+            if not api_key:
+                try:
+                    if hasattr(st.secrets, 'OPENAI_API_KEY'):
+                        api_key = getattr(st.secrets, 'OPENAI_API_KEY', None)
+                except (AttributeError, TypeError):
+                    pass
+            
+            # Last resort: try to access via _secrets if it exists (internal Streamlit structure)
+            if not api_key:
+                try:
+                    if hasattr(st.secrets, '_secrets'):
+                        internal_secrets = getattr(st.secrets, '_secrets', {})
+                        if isinstance(internal_secrets, dict):
+                            api_key = internal_secrets.get('OPENAI_API_KEY', None)
+                except (AttributeError, TypeError):
+                    pass
     except (AttributeError, KeyError, TypeError, ImportError, RuntimeError):
         # Streamlit secrets not available or not initialized
         pass
