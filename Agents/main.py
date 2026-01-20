@@ -2774,9 +2774,12 @@ def main():
                         except (ImportError, ModuleNotFoundError) as import_err:
                             # If both libraries fail, show helpful message
                             if not pdf_generated:
-                                st.error(f"📄 PDF generation error: {str(import_err)}")
-                                st.info("📄 PDF generation requires either 'reportlab' or 'fpdf2' library. Please ensure one is installed in requirements.txt and the app has been redeployed.")
-                                st.error(f"Import error: {str(import_err)}")
+                                error_msg = str(import_err)
+                                st.error(f"📄 PDF generation error: {error_msg}")
+                                if "fpdf" in error_msg.lower() or "fpdf2" in error_msg.lower():
+                                    st.info("📄 The 'fpdf2' library is not installed. Please ensure 'fpdf2>=2.7.0' is in requirements.txt and the app has been redeployed on Streamlit Cloud.")
+                                else:
+                                    st.info("📄 PDF generation requires either 'reportlab' or 'fpdf2' library. Please ensure one is installed in requirements.txt and the app has been redeployed.")
                         except Exception as e:
                             st.warning(f"PDF generation error (fpdf2): {str(e)}")
                             if not pdf_generated:
