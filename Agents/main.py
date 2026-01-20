@@ -2659,9 +2659,10 @@ def main():
                                 use_container_width=True
                             )
                             pdf_generated = True
-                        except ImportError as import_err:
+                        except (ImportError, ModuleNotFoundError) as import_err:
                             # If both libraries fail, show helpful message
                             if not pdf_generated:
+                                st.error(f"📄 PDF generation error: {str(import_err)}")
                                 st.info("📄 PDF generation requires either 'reportlab' or 'fpdf2' library. Please ensure one is installed in requirements.txt and the app has been redeployed.")
                                 st.error(f"Import error: {str(import_err)}")
                         except Exception as e:
