@@ -2444,10 +2444,157 @@ def main():
                     # Generate downloadable HTML file (can be printed as PDF by browser)
                     # This approach doesn't require any external libraries
                     try:
-                        try:
-                            buffer = BytesIO()
-                            doc = SimpleDocTemplate(buffer, pagesize=letter)
-                            story = []
+                        # Generate HTML file with print-friendly styling
+                        html_content = f"""<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{st.session_state.mission_story_title}</title>
+    <style>
+        @media print {{
+            @page {{
+                margin: 1in;
+                size: letter;
+            }}
+            body {{
+                margin: 0;
+                padding: 20px;
+            }}
+        }}
+        body {{
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            color: #333;
+        }}
+        .title {{
+            font-size: 24px;
+            font-weight: bold;
+            color: #2563eb;
+            text-align: center;
+            margin-bottom: 10px;
+        }}
+        .author {{
+            text-align: center;
+            font-style: italic;
+            color: #666;
+            margin-bottom: 30px;
+        }}
+        .section-title {{
+            font-size: 18px;
+            font-weight: bold;
+            color: #2563eb;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }}
+        .agent-name {{
+            font-size: 14px;
+            font-weight: bold;
+            color: #1e40af;
+            margin-top: 15px;
+        }}
+        .agent-desc {{
+            font-size: 12px;
+            color: #475569;
+            margin-left: 15px;
+            margin-bottom: 10px;
+        }}
+        .story-content {{
+            font-size: 14px;
+            line-height: 1.8;
+            margin: 20px 0;
+        }}
+        .qa-section {{
+            margin-top: 30px;
+        }}
+        .qa-title {{
+            font-size: 18px;
+            font-weight: bold;
+            color: #6b46c1;
+            margin-bottom: 15px;
+        }}
+        .question {{
+            font-size: 13px;
+            font-weight: bold;
+            color: #553c9a;
+            margin-top: 15px;
+        }}
+        .answer {{
+            font-size: 12px;
+            color: #1e293b;
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }}
+    </style>
+</head>
+<body>
+    <div class="title">{st.session_state.mission_story_title}</div>
+"""
+                        
+                        if st.session_state.get('user_creative_name'):
+                            html_content += f'    <div class="author">by {st.session_state.user_creative_name}</div>\n'
+                        
+                        # Add mission if available
+                        if st.session_state.team_mission:
+                            html_content += f'    <div class="section-title">🎯 The Mission</div>\n'
+                            html_content += f'    <div class="story-content">{st.session_state.team_mission}</div>\n'
+                        
+                        # Add agent descriptions
+                        if st.session_state.created_bots:
+                            html_content += '    <div class="section-title">🤖 The Team</div>\n'
+                            for bot in st.session_state.created_bots:
+                                agent_name = bot.get('name', 'Agent')
+                                agent_number = bot.get('number', '')
+                                agent_desc = clean_agent_description(bot.get('description', ''))
+                                agent_character = clean_agent_description(bot.get('character', ''))
+                                
+                                name_text = f"Agent #{agent_number}: {agent_name}" if agent_number else agent_name
+                                html_content += f'    <div class="agent-name">{name_text}</div>\n'
+                                
+                                if agent_desc:
+                                    html_content += f'    <div class="agent-desc">{agent_desc.replace(chr(10), "<br>")}</div>\n'
+                                
+                                if agent_character:
+                                    html_content += f'    <div class="agent-desc"><em>{agent_character.replace(chr(10), "<br>")}</em></div>\n'
+                        
+                        # Add story content
+                        html_content += '    <div class="section-title">📚 The Story</div>\n'
+                        story_paragraphs = st.session_state.mission_story.split('\n\n')
+                        for para in story_paragraphs:
+                            if para.strip():
+                                para_html = para.replace('\n', '<br>')
+                                html_content += f'    <div class="story-content">{para_html}</div>\n'
+                        
+                        # Add Q&A section
+                        if st.session_state.story_qa_history:
+                            html_content += '    <div class="qa-section">\n'
+                            html_content += '        <div class="qa-title">Questions & Answers</div>\n'
+                            for idx, qa in enumerate(st.session_state.story_qa_history, 1):
+                                question = qa['question'].replace('\n', '<br>')
+                                answer = qa['answer'].replace('\n', '<br>')
+                                html_content += f'        <div class="question">Q{idx}: {question}</div>\n'
+                                html_content += f'        <div class="answer">A{idx}: {answer}</div>\n'
+                            html_content += '    </div>\n'
+                        
+                        html_content += """
+</body>
+</html>
+"""
+                        
+                        # Download button for HTML file
+                        st.download_button(
+                            label="📄 Download Story (HTML)",
+                            data=html_content.encode('utf-8'),
+                            file_name=f"{st.session_state.mission_story_title.replace(' ', '_')}.html",
+                            mime="text/html",
+                            use_container_width=True,
+                            help="Download as HTML file. Open it in your browser and use Print > Save as PDF to create a PDF."
+                        )
+                        st.info("💡 **Tip:** After downloading, open the HTML file in your browser and use **Print > Save as PDF** to create a PDF file.")
+                    except Exception as e:
+                        st.error(f"📄 Error generating downloadable file: {str(e)}")
                             
                             # Title style
                             title_style = ParagraphStyle(
