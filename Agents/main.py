@@ -17,6 +17,7 @@ except ImportError:
 
 def play_sound(sound_type):
     """Play a sound effect based on the event type using Web Audio API with better initialization"""
+    # Use st.html instead of st.markdown for JavaScript execution
     # Comprehensive audio initialization that works across page reloads
     init_audio_script = """
     <script>
@@ -315,12 +316,27 @@ def play_sound(sound_type):
         """
     }
     
-    # Inject initialization script (will run on every rerun but only initialize once)
-    st.markdown(init_audio_script, unsafe_allow_html=True)
+    # Inject initialization script using st.html (supports JavaScript execution)
+    # Try st.html first (Streamlit >= 1.52.0), fallback to st.markdown
+    try:
+        # Check if st.html with unsafe_allow_javascript is available
+        if hasattr(st, 'html'):
+            st.html(init_audio_script, unsafe_allow_javascript=True, height=0)
+        else:
+            st.markdown(init_audio_script, unsafe_allow_html=True)
+    except (TypeError, AttributeError):
+        # Fallback if unsafe_allow_javascript parameter doesn't exist
+        st.markdown(init_audio_script, unsafe_allow_html=True)
     
     # Only play sound if a valid sound type is provided
     if sound_type and sound_type in sound_scripts:
-        st.markdown(sound_scripts[sound_type], unsafe_allow_html=True)
+        try:
+            if hasattr(st, 'html'):
+                st.html(sound_scripts[sound_type], unsafe_allow_javascript=True, height=0)
+            else:
+                st.markdown(sound_scripts[sound_type], unsafe_allow_html=True)
+        except (TypeError, AttributeError):
+            st.markdown(sound_scripts[sound_type], unsafe_allow_html=True)
 
 def generate_agent_example():
     """Generate a short random agent description example (around 10 words) inspired by Star Trek characters with extensive variety"""
@@ -2655,13 +2671,20 @@ def main():
         st.markdown('<div id="welcome-title-element" style="font-size: 2.25rem; font-weight: 600; color: #bfdbfe !important; margin-bottom: 0.5rem;">Welcome to Denken Labs</div>', unsafe_allow_html=True)
         st.markdown('<div class="tagline-text">**Get ready for an exiting mission**</div>', unsafe_allow_html=True)
         
-        # Test if JavaScript is working at all
-        st.markdown("""
+        # Test if JavaScript is working at all - use st.html for JS execution
+        test_js = """
         <script>
         console.log('🧪 TEST: JavaScript is working!');
         alert('JavaScript test - if you see this, JS is working!');
         </script>
-        """, unsafe_allow_html=True)
+        """
+        try:
+            if hasattr(st, 'html'):
+                st.html(test_js, unsafe_allow_javascript=True, height=0)
+            else:
+                st.markdown(test_js, unsafe_allow_html=True)
+        except (TypeError, AttributeError):
+            st.markdown(test_js, unsafe_allow_html=True)
         
         # Inject audio initialization script FIRST (before button) so button can use it
         play_sound('')  # This injects the audio init script without playing a sound
@@ -2678,8 +2701,8 @@ def main():
         </div>
         """, unsafe_allow_html=True)
         
-        # Separate script injection to ensure it executes
-        st.markdown("""
+        # Separate script injection to ensure it executes - use st.html for JS
+        button_script = """
         <script>
         (function() {
             console.log('=== BUTTON SCRIPT LOADING ===');
@@ -2777,7 +2800,14 @@ def main():
             console.log('=== BUTTON SCRIPT COMPLETE ===');
         })();
         </script>
-        """, unsafe_allow_html=True)
+        """
+        try:
+            if hasattr(st, 'html'):
+                st.html(button_script, unsafe_allow_javascript=True, height=0)
+            else:
+                st.markdown(button_script, unsafe_allow_html=True)
+        except (TypeError, AttributeError):
+            st.markdown(button_script, unsafe_allow_html=True)
         
         # Build your own agent button - compact (purple)
         st.markdown("""
