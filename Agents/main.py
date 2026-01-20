@@ -1441,7 +1441,7 @@ def main():
                 // Ensure all nested elements use dark text color
                 var allChildren = div.querySelectorAll('*');
                 allChildren.forEach(function(child) {
-                    child.style.setProperty('color', '#1e293b', 'important');
+                    child.style.setProperty('color', '#e5e7eb', 'important');
                     child.style.setProperty('background-color', 'transparent', 'important');
                     child.style.removeProperty('opacity');
                     child.style.removeProperty('filter');
@@ -2454,7 +2454,7 @@ def main():
                 # Replace single newlines with line breaks
                 story_html = story_html.replace('\n', '<br>')
                 # Wrap in paragraph tags
-                story_html = f'<p style="margin-bottom: 10px; color: #1e293b;">{story_html}</p>'
+                story_html = f'<p style="margin-bottom: 10px; color: #e5e7eb;">{story_html}</p>'
                 
                 st.markdown(f"""
                 <div class="story-content" style='background-color: #374151; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #6b46c1; color: #e5e7eb;'>
@@ -2542,10 +2542,10 @@ def main():
                     for idx, qa in enumerate(st.session_state.story_qa_history):
                         st.markdown(f"""
                         <div style='background-color: #374151; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #6b46c1;'>
-                            <div style='font-weight: bold; color: #553c9a; margin-bottom: 8px;'>
+                            <div style='font-weight: bold; color: #a78bfa; margin-bottom: 8px;'>
                                 ❓ Question: {qa['question']}
                             </div>
-                            <div style='color: #1e293b; padding-left: 10px;'>
+                            <div style='color: #e5e7eb; padding-left: 10px;'>
                                 💡 {qa['answer']}
                             </div>
                         </div>
