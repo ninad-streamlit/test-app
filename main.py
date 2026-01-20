@@ -826,34 +826,33 @@ def main():
     }
     </style>
     <script>
-    // Force story content background to be white and text black in dark mode
+    // Force story content to match Q&A section styling in dark mode
     function forceStoryTransparent() {
-        if (document.documentElement.getAttribute('data-theme') === 'dark') {
-            var storyDivs = document.querySelectorAll('.story-content, div.story-content');
-            storyDivs.forEach(function(div) {
-                if (div) {
-                    // Force white background and black text on the main div using cssText for maximum override
-                    div.style.cssText = 'background-color: #ffffff !important; color: #000000 !important; padding: 20px !important; border-radius: 10px !important; border-left: 5px solid var(--primary-color) !important;';
-                    div.setAttribute('style', 'background-color: #ffffff !important; color: #000000 !important; padding: 20px !important; border-radius: 10px !important; border-left: 5px solid var(--primary-color) !important;');
-                    
-                    // Also ensure all nested elements are pure black
-                    var allChildren = div.querySelectorAll('*');
-                    allChildren.forEach(function(child) {
-                        child.style.setProperty('color', '#000000', 'important');
-                        child.style.setProperty('background-color', 'transparent', 'important');
-                        // Remove any opacity or other color properties that might make text faint
-                        child.style.removeProperty('opacity');
-                        child.style.removeProperty('filter');
-                    });
-                    
-                    // Also target the story-text span specifically
-                    var storyTextSpans = div.querySelectorAll('.story-text, span.story-text');
-                    storyTextSpans.forEach(function(span) {
-                        span.style.cssText = 'color: #000000 !important; background-color: transparent !important;';
-                    });
-                }
-            });
-        }
+        // Apply Q&A styling to story content (works in both light and dark mode)
+        var storyDivs = document.querySelectorAll('.story-content, div.story-content');
+        storyDivs.forEach(function(div) {
+            if (div) {
+                // Match Q&A section styling: #f9fafb background, #1e293b text, #6b46c1 border
+                div.style.cssText = 'background-color: #f9fafb !important; color: #1e293b !important; padding: 15px !important; border-radius: 8px !important; margin-bottom: 15px !important; border-left: 4px solid #6b46c1 !important;';
+                div.setAttribute('style', 'background-color: #f9fafb !important; color: #1e293b !important; padding: 15px !important; border-radius: 8px !important; margin-bottom: 15px !important; border-left: 4px solid #6b46c1 !important;');
+                
+                // Also ensure all nested elements use dark text color
+                var allChildren = div.querySelectorAll('*');
+                allChildren.forEach(function(child) {
+                    child.style.setProperty('color', '#1e293b', 'important');
+                    child.style.setProperty('background-color', 'transparent', 'important');
+                    // Remove any opacity or other color properties that might make text faint
+                    child.style.removeProperty('opacity');
+                    child.style.removeProperty('filter');
+                });
+                
+                // Also target the story-text span specifically
+                var storyTextSpans = div.querySelectorAll('.story-text, span.story-text');
+                storyTextSpans.forEach(function(span) {
+                    span.style.cssText = 'color: #1e293b !important; background-color: transparent !important;';
+                });
+            }
+        });
     }
     
     // Run immediately and continuously
@@ -1825,11 +1824,11 @@ def main():
                         except Exception as e:
                             st.warning(f"PDF generation error: {str(e)}")
                 
-                # Display story content - wrap text in span to ensure black color in dark mode
+                # Display story content - use same styling as Q&A section
                 story_html = st.session_state.mission_story.replace(chr(10), '<br>')
                 st.markdown(f"""
-                <div class="story-content" style='background-color: #f0f8ff; padding: 20px; border-radius: 10px; border-left: 5px solid var(--primary-color);'>
-                    <span class="story-text" style='color: #000000 !important;'>{story_html}</span>
+                <div class="story-content" style='background-color: #f9fafb; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #6b46c1;'>
+                    <span class="story-text" style='color: #1e293b !important;'>{story_html}</span>
                 </div>
                 """, unsafe_allow_html=True)
                 
