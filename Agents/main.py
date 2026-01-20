@@ -1011,23 +1011,29 @@ def main():
             st.markdown(f"""
                 <script>
                 (function() {{
-                    // Remove ALL existing favicon links (including Streamlit's default and any cached ones)
-                    var existingLinks = document.querySelectorAll('link[rel*="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"]');
-                    existingLinks.forEach(function(link) {{
-                        link.remove();
-                    }});
-                    
-                    // Also try to remove by href if it contains bot.png (case insensitive)
-                    var allLinks = document.querySelectorAll('link');
-                    allLinks.forEach(function(link) {{
-                        var href = link.getAttribute('href') || '';
-                        if (href.toLowerCase().includes('bot.png') || href.toLowerCase().includes('bot')) {{
+                    // Function to remove all favicon links
+                    function removeAllFavicons() {{
+                        // Remove ALL existing favicon links (including Streamlit's default emoji and any cached ones)
+                        var existingLinks = document.querySelectorAll('link[rel*="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"]');
+                        existingLinks.forEach(function(link) {{
                             link.remove();
-                        }}
-                    }});
+                        }});
+                        
+                        // Also try to remove by href if it contains bot.png or emoji (case insensitive)
+                        var allLinks = document.querySelectorAll('link');
+                        allLinks.forEach(function(link) {{
+                            var href = link.getAttribute('href') || '';
+                            var rel = link.getAttribute('rel') || '';
+                            if (href.toLowerCase().includes('bot.png') || 
+                                href.toLowerCase().includes('bot') ||
+                                (rel.toLowerCase().includes('icon') && !href.includes('denkenlabs') && !href.includes('base64'))) {{
+                                link.remove();
+                            }}
+                        }});
+                    }}
                     
-                    // Wait a moment to ensure removal is complete
-                    setTimeout(function() {{
+                    // Function to add our favicon
+                    function addFavicon() {{
                         // Add new favicon with Logo-DenkenLabs.png (larger size 96x96)
                         var link1 = document.createElement('link');
                         link1.rel = 'icon';
@@ -1048,13 +1054,47 @@ def main():
                         link3.sizes = '180x180';
                         link3.href = 'data:image/png;base64,{favicon_base64}?denkenlabs={cache_buster}';
                         document.head.appendChild(link3);
-                        
-                        // Force favicon reload by creating a temporary link
-                        var tempLink = document.createElement('link');
-                        tempLink.rel = 'icon';
-                        tempLink.href = 'data:image/png;base64,{favicon_base64}?force={cache_buster}';
-                        document.head.appendChild(tempLink);
-                    }}, 100);
+                    }}
+                    
+                    // Remove immediately
+                    removeAllFavicons();
+                    
+                    // Also remove after DOM is fully loaded
+                    if (document.readyState === 'loading') {{
+                        document.addEventListener('DOMContentLoaded', function() {{
+                            removeAllFavicons();
+                            addFavicon();
+                        }});
+                    }}
+                    
+                    // Remove and add after delays to catch any late-loading favicons
+                    setTimeout(function() {{ removeAllFavicons(); addFavicon(); }}, 50);
+                    setTimeout(function() {{ removeAllFavicons(); addFavicon(); }}, 200);
+                    setTimeout(function() {{ removeAllFavicons(); addFavicon(); }}, 500);
+                    
+                    // Add immediately
+                    addFavicon();
+                    
+                    // Use MutationObserver to catch any new favicon links Streamlit might add
+                    var observer = new MutationObserver(function(mutations) {{
+                        mutations.forEach(function(mutation) {{
+                            mutation.addedNodes.forEach(function(node) {{
+                                if (node.nodeName === 'LINK') {{
+                                    var rel = node.getAttribute('rel') || '';
+                                    var href = node.getAttribute('href') || '';
+                                    if (rel.toLowerCase().includes('icon') && 
+                                        !href.includes('denkenlabs') && 
+                                        !href.includes('base64')) {{
+                                        // This is a favicon we didn't add - remove it
+                                        node.remove();
+                                        addFavicon();
+                                    }}
+                                }}
+                            }});
+                        }});
+                    }});
+                    
+                    observer.observe(document.head, {{ childList: true, subtree: true }});
                 }})();
                 </script>
                 """, unsafe_allow_html=True)
