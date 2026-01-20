@@ -630,10 +630,10 @@ def main():
         color: #e2e8f0 !important;
     }
     
-    /* Story content in dark mode - make background darker and text white */
+    /* Story content in dark mode - make background transparent and text white for visibility */
     [data-theme="dark"] .story-content {
-        background-color: #1e293b !important; /* Dark blue-gray background */
-        color: #ffffff !important;
+        background-color: transparent !important; /* Transparent background in dark mode */
+        color: #ffffff !important; /* Pure white text for maximum visibility */
     }
     
     [data-theme="dark"] .story-content *,
@@ -641,7 +641,8 @@ def main():
     [data-theme="dark"] .story-content span,
     [data-theme="dark"] .story-content div,
     [data-theme="dark"] .story-content br {
-        color: #ffffff !important;
+        color: #ffffff !important; /* Pure white for all nested elements */
+        background-color: transparent !important; /* Ensure nested elements are transparent too */
     }
     
     /* Light blue text for specific elements in dark mode */
