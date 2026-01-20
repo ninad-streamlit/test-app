@@ -1940,7 +1940,9 @@ def main():
                             st.markdown(f"<div class='agent-number' style='text-align: left; margin-top: 5px;'><strong>#{bot.get('number', bot_number)}</strong></div>", unsafe_allow_html=True)
                         
                         with col2:
-                            st.markdown(f'<div class="agent-name"><strong>{bot["name"]}</strong></div>', unsafe_allow_html=True)
+                            # Use inline style with ID for direct JavaScript targeting
+                            agent_name_id = f"agent-name-{bot['id']}"
+                            st.markdown(f'<div id="{agent_name_id}" class="agent-name" style="color: #bfdbfe !important;"><strong>{bot["name"]}</strong></div>', unsafe_allow_html=True)
                             st.markdown(f"{bot['description']}")
                             # Display character profile if available
                             if bot.get('character'):
