@@ -1736,7 +1736,17 @@ def main():
     
     try:
         if logo_path:
-            st.image(logo_path, width=280)
+            # Use HTML img tag with transparent background styling for better control
+            import base64
+            with open(logo_path, "rb") as img_file:
+                logo_base64 = base64.b64encode(img_file.read()).decode()
+                st.markdown(f"""
+                <div style="text-align: center; background: transparent !important;">
+                    <img src="data:image/png;base64,{logo_base64}" 
+                         style="max-width: 280px; width: 100%; height: auto; background: transparent !important; background-color: transparent !important;" 
+                         alt="Denken Labs Logo" />
+                </div>
+                """, unsafe_allow_html=True)
         else:
             # Debug: show which paths were checked
             st.info(f"Logo not found. Checked: {logo_paths}")
