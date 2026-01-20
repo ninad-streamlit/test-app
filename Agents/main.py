@@ -2443,6 +2443,7 @@ def main():
                     st.markdown("<br>", unsafe_allow_html=True)  # Spacing
                     # Generate PDF using reportlab
                     # Try importing reportlab at runtime (in case it was installed after app start)
+                    reportlab_available = False
                     try:
                         from reportlab.lib.pagesizes import letter
                         from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -2450,8 +2451,11 @@ def main():
                         from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
                         from reportlab.lib.enums import TA_CENTER
                         reportlab_available = True
-                    except ImportError:
+                    except ImportError as e:
+                        # If runtime import fails, try the module-level import
                         reportlab_available = REPORTLAB_AVAILABLE
+                        if not reportlab_available:
+                            st.error(f"Reportlab import error: {str(e)}")
                     
                     if reportlab_available:
                         try:
