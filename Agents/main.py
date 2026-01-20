@@ -1306,7 +1306,7 @@ def main():
     <script>
     (function() {
         // Update page title immediately
-        document.title = "Denken Labs - Begin your space adventure";
+        document.title = "Denken Labs - Create AI Agents and Collaborative Adventures";
         
         // Helper function to create or update meta tags
         function setMetaTag(attr, value, content) {
@@ -1320,16 +1320,16 @@ def main():
             tag.setAttribute('content', content);
         }
         
-        // Set all Open Graph and Twitter Card meta tags
+        // Set all Open Graph and Twitter Card meta tags for social media sharing
         setMetaTag('property', 'og:type', 'website');
-        setMetaTag('property', 'og:title', 'Denken Labs');
-        setMetaTag('property', 'og:description', 'Begin your space adventure');
+        setMetaTag('property', 'og:title', 'Denken Labs - Create AI Agents and Collaborative Adventures');
+        setMetaTag('property', 'og:description', 'Build your own AI agent team, assign missions, and watch them collaborate to create amazing stories. Create custom AI agents with unique personalities and watch them work together on exciting adventures.');
         setMetaTag('property', 'og:site_name', 'Denken Labs');
         setMetaTag('property', 'og:url', window.location.href);
-        setMetaTag('name', 'description', 'Begin your space adventure');
+        setMetaTag('name', 'description', 'Build your own AI agent team, assign missions, and watch them collaborate to create amazing stories. Create custom AI agents with unique personalities and watch them work together on exciting adventures.');
         setMetaTag('name', 'twitter:card', 'summary_large_image');
-        setMetaTag('name', 'twitter:title', 'Denken Labs');
-        setMetaTag('name', 'twitter:description', 'Begin your space adventure');
+        setMetaTag('name', 'twitter:title', 'Denken Labs - Create AI Agents and Collaborative Adventures');
+        setMetaTag('name', 'twitter:description', 'Build your own AI agent team, assign missions, and watch them collaborate to create amazing stories. Create custom AI agents with unique personalities and watch them work together on exciting adventures.');
     """
     
     # Add image meta tags if logo is available
