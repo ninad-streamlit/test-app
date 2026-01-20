@@ -664,10 +664,24 @@ def main():
         background-color: transparent !important; /* Transparent background for nested elements */
     }
     
-    /* Light blue text for specific elements in dark mode */
+    /* Light blue text for specific elements in dark mode - use ID for maximum specificity */
+    [data-theme="dark"] #welcome-title-header,
+    [data-theme="dark"] #welcome-title-header *,
+    [data-theme="dark"] h2#welcome-title-header,
+    [data-theme="dark"] h2#welcome-title-header *,
+    [data-theme="dark"] .welcome-title#welcome-title-header,
+    [data-theme="dark"] .welcome-title#welcome-title-header *,
     [data-theme="dark"] .welcome-title,
     [data-theme="dark"] .welcome-title * {
         color: #bfdbfe !important; /* Very light blue - lighter for better visibility */
+    }
+    
+    /* Additional CSS to ensure the inline style is overridden in dark mode */
+    [data-theme="dark"] h2[data-light-color] {
+        color: #bfdbfe !important;
+    }
+    [data-theme="dark"] h2[data-light-color] * {
+        color: #bfdbfe !important;
     }
     
     [data-theme="dark"] .version-number,
