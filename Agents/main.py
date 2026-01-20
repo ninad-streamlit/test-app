@@ -2663,100 +2663,99 @@ def main():
             <div id="audio-status" style="margin-top: 5px; font-size: 12px; color: #666;"></div>
         </div>
         <script>
-        (function() {
+        console.log('=== BUTTON SCRIPT LOADING ===');
+        
+        function setupAudioButton() {
+            console.log('Setting up audio button...');
             const btn = document.getElementById('enable-audio-btn');
             const status = document.getElementById('audio-status');
             
-            if (!btn) return;
+            if (!btn) {
+                console.error('Button not found!');
+                return;
+            }
+            
+            console.log('Button found, checking audio system...');
+            console.log('denkenAudioSystem exists:', !!window.denkenAudioSystem);
+            console.log('enableDenkenAudio exists:', typeof window.enableDenkenAudio);
             
             // Hide button if audio is already enabled
             if (window.denkenAudioSystem && window.denkenAudioSystem.enabled) {
+                console.log('Audio already enabled, hiding button');
                 btn.style.display = 'none';
                 if (status) status.textContent = '✅ Sounds enabled';
                 return;
             }
             
-            // Add click handler
-            btn.addEventListener('click', async function() {
+            // Remove any existing listeners
+            const newBtn = btn.cloneNode(true);
+            btn.parentNode.replaceChild(newBtn, btn);
+            
+            // Add click handler to new button
+            newBtn.addEventListener('click', async function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('🔘 BUTTON CLICKED!');
+                
                 try {
-                    status.textContent = '🔄 Enabling sounds...';
-                    btn.disabled = true;
-                    btn.style.opacity = '0.6';
+                    if (status) status.textContent = '🔄 Enabling sounds...';
+                    newBtn.disabled = true;
+                    newBtn.style.opacity = '0.6';
                     
                     let context = null;
                     
                     // Call enable function
                     if (window.enableDenkenAudio) {
+                        console.log('Calling enableDenkenAudio...');
                         context = await window.enableDenkenAudio();
+                        console.log('enableDenkenAudio returned:', context);
                     } else {
-                        // Fallback: try to initialize directly
-                        if (!window.denkenAudioSystem) {
-                            status.textContent = '❌ Audio system not initialized. Please refresh the page.';
-                            btn.disabled = false;
-                            btn.style.opacity = '1';
-                            return;
-                        }
-                        
-                        // Initialize audio context
-                        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-                        if (!AudioContextClass) {
-                            status.textContent = '❌ Web Audio API not supported in this browser.';
-                            btn.disabled = false;
-                            btn.style.opacity = '1';
-                            return;
-                        }
-                        
-                        context = new AudioContextClass();
-                        if (context.state === 'suspended') {
-                            await context.resume();
-                        }
-                        
-                        window.denkenAudioSystem.context = context;
-                        window.denkenAudioSystem.enabled = true;
-                        window.denkenAudioSystem.userInteracted = true;
-                        
-                        // Play test sound
-                        setTimeout(() => {
-                            try {
-                                const oscillator = context.createOscillator();
-                                const gainNode = context.createGain();
-                                oscillator.connect(gainNode);
-                                gainNode.connect(context.destination);
-                                oscillator.frequency.value = 523.25;
-                                oscillator.type = 'sine';
-                                gainNode.gain.setValueAtTime(0.6, context.currentTime);
-                                gainNode.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.5);
-                                oscillator.start(context.currentTime);
-                                oscillator.stop(context.currentTime + 0.5);
-                            } catch(e) {
-                                console.error('Test sound error:', e);
-                            }
-                        }, 100);
+                        console.error('enableDenkenAudio function not found!');
+                        if (status) status.textContent = '❌ Audio system not initialized. Please refresh the page.';
+                        newBtn.disabled = false;
+                        newBtn.style.opacity = '1';
+                        return;
                     }
                     
                     if (context && context.state === 'running') {
-                        status.textContent = '✅ Sounds enabled! You should hear a test sound.';
-                        btn.textContent = '✅ Sounds Enabled';
+                        if (status) status.textContent = '✅ Sounds enabled! You should hear a test sound.';
+                        newBtn.textContent = '✅ Sounds Enabled';
                         setTimeout(() => {
-                            status.textContent = '✅ Sounds are now enabled for all actions!';
+                            if (status) status.textContent = '✅ Sounds are now enabled for all actions!';
                             setTimeout(() => {
-                                btn.style.display = 'none';
-                                status.style.display = 'none';
+                                newBtn.style.display = 'none';
+                                if (status) status.style.display = 'none';
                             }, 2000);
                         }, 1000);
                     } else {
-                        status.textContent = '⚠️ Audio enabled but context state: ' + (context ? context.state : 'null');
-                        btn.disabled = false;
-                        btn.style.opacity = '1';
+                        if (status) status.textContent = '⚠️ Audio enabled but context state: ' + (context ? context.state : 'null');
+                        newBtn.disabled = false;
+                        newBtn.style.opacity = '1';
                     }
                 } catch(e) {
-                    console.error('Error enabling audio:', e);
-                    status.textContent = '❌ Error: ' + e.message;
-                    btn.disabled = false;
-                    btn.style.opacity = '1';
+                    console.error('❌ Error enabling audio:', e);
+                    if (status) status.textContent = '❌ Error: ' + e.message;
+                    newBtn.disabled = false;
+                    newBtn.style.opacity = '1';
                 }
             });
-        })();
+            
+            console.log('Button setup complete');
+        }
+        
+        // Try to setup immediately
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', setupAudioButton);
+        } else {
+            setupAudioButton();
+        }
+        
+        // Also try after a short delay (in case Streamlit hasn't rendered yet)
+        setTimeout(setupAudioButton, 500);
+        setTimeout(setupAudioButton, 1000);
+        setTimeout(setupAudioButton, 2000);
+        
+        console.log('=== BUTTON SCRIPT COMPLETE ===');
         </script>
         """, unsafe_allow_html=True)
         
