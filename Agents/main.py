@@ -16,49 +16,84 @@ except ImportError:
     REPORTLAB_AVAILABLE = False
 
 def play_sound(sound_type):
-    """Play a sound effect based on the event type using Web Audio API"""
-    # Initialize audio context on first load and resume if suspended
+    """Play a sound effect based on the event type using Web Audio API with better initialization"""
+    # Comprehensive audio initialization that works across page reloads
     init_audio_script = """
     <script>
     (function() {
-        // Initialize or get global audio context
-        if (!window.denkenAudioContext) {
-            window.denkenAudioContext = null;
-        }
-        
-        function getAudioContext() {
-            if (!window.denkenAudioContext) {
+        // Initialize audio system
+        if (!window.denkenAudioSystem) {
+            window.denkenAudioSystem = {
+                context: null,
+                initialized: false,
+                userInteracted: false
+            };
+            
+            // Function to initialize audio context
+            function initAudioContext() {
+                if (window.denkenAudioSystem.context) {
+                    return window.denkenAudioSystem.context;
+                }
+                
                 try {
-                    window.denkenAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                    if (!AudioContextClass) {
+                        console.log('Web Audio API not supported');
+                        return null;
+                    }
+                    
+                    window.denkenAudioSystem.context = new AudioContextClass();
+                    console.log('Audio context created, state:', window.denkenAudioSystem.context.state);
+                    return window.denkenAudioSystem.context;
                 } catch(e) {
                     console.log('Audio context creation failed:', e);
                     return null;
                 }
             }
             
-            // Resume if suspended (browsers suspend audio context until user interaction)
-            if (window.denkenAudioContext.state === 'suspended') {
-                window.denkenAudioContext.resume().then(() => {
-                    console.log('Audio context resumed');
-                }).catch(err => {
-                    console.log('Failed to resume audio context:', err);
-                });
+            // Function to ensure audio context is running
+            async function ensureAudioReady() {
+                let context = window.denkenAudioSystem.context || initAudioContext();
+                if (!context) return null;
+                
+                // Resume if suspended
+                if (context.state === 'suspended') {
+                    try {
+                        await context.resume();
+                        console.log('Audio context resumed');
+                    } catch(e) {
+                        console.log('Failed to resume audio context:', e);
+                        return null;
+                    }
+                }
+                
+                return context;
             }
             
-            return window.denkenAudioContext;
-        }
-        
-        // Store function globally
-        window.getDenkenAudioContext = getAudioContext;
-        
-        // Try to resume on any user interaction
-        ['click', 'touchstart', 'keydown'].forEach(eventType => {
-            document.addEventListener(eventType, function() {
-                if (window.denkenAudioContext && window.denkenAudioContext.state === 'suspended') {
-                    window.denkenAudioContext.resume();
+            // Store functions globally
+            window.initDenkenAudio = initAudioContext;
+            window.ensureDenkenAudioReady = ensureAudioReady;
+            
+            // Initialize on any user interaction
+            function enableAudio() {
+                if (!window.denkenAudioSystem.userInteracted) {
+                    window.denkenAudioSystem.userInteracted = true;
+                    initAudioContext();
+                    ensureAudioReady();
                 }
-            }, { once: true });
-        });
+            }
+            
+            // Listen for user interactions to enable audio
+            ['click', 'touchstart', 'keydown', 'mousedown'].forEach(eventType => {
+                document.addEventListener(eventType, enableAudio, { once: false, passive: true });
+            });
+            
+            // Also try to initialize immediately (might work if user already interacted)
+            setTimeout(() => {
+                initAudioContext();
+                ensureAudioReady();
+            }, 100);
+        }
     })();
     </script>
     """
@@ -67,82 +102,80 @@ def play_sound(sound_type):
         'user_name': """
         <script>
         (function() {
-            try {
-                const audioContext = window.getDenkenAudioContext ? window.getDenkenAudioContext() : null;
-                if (!audioContext) return;
-                
-                // Wait a bit for context to resume if needed
-                setTimeout(() => {
-                    if (audioContext.state === 'suspended') {
-                        audioContext.resume();
+            setTimeout(async () => {
+                try {
+                    const context = await window.ensureDenkenAudioReady();
+                    if (!context) {
+                        console.log('Audio context not available');
+                        return;
                     }
                     
-                    const oscillator = audioContext.createOscillator();
-                    const gainNode = audioContext.createGain();
+                    const oscillator = context.createOscillator();
+                    const gainNode = context.createGain();
                     
                     oscillator.connect(gainNode);
-                    gainNode.connect(audioContext.destination);
+                    gainNode.connect(context.destination);
                     
                     oscillator.frequency.value = 523.25; // C5 note
                     oscillator.type = 'sine';
                     
-                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                    gainNode.gain.setValueAtTime(0.5, context.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.4);
                     
-                    oscillator.start(audioContext.currentTime);
-                    oscillator.stop(audioContext.currentTime + 0.3);
-                }, 50);
-            } catch(e) {
-                console.log('Audio playback error:', e);
-            }
+                    oscillator.start(context.currentTime);
+                    oscillator.stop(context.currentTime + 0.4);
+                    console.log('User name sound played');
+                } catch(e) {
+                    console.log('Audio playback error:', e);
+                }
+            }, 100);
         })();
         </script>
         """,
         'agent_created': """
         <script>
         (function() {
-            try {
-                const audioContext = window.getDenkenAudioContext ? window.getDenkenAudioContext() : null;
-                if (!audioContext) return;
-                
-                setTimeout(() => {
-                    if (audioContext.state === 'suspended') {
-                        audioContext.resume();
+            setTimeout(async () => {
+                try {
+                    const context = await window.ensureDenkenAudioReady();
+                    if (!context) {
+                        console.log('Audio context not available');
+                        return;
                     }
                     
                     // Play a pleasant ascending chord
                     const notes = [523.25, 659.25, 783.99]; // C5, E5, G5
                     notes.forEach((freq, index) => {
                         setTimeout(() => {
-                            const osc = audioContext.createOscillator();
-                            const gain = audioContext.createGain();
+                            const osc = context.createOscillator();
+                            const gain = context.createGain();
                             osc.connect(gain);
-                            gain.connect(audioContext.destination);
+                            gain.connect(context.destination);
                             osc.frequency.value = freq;
                             osc.type = 'sine';
-                            gain.gain.setValueAtTime(0.2, audioContext.currentTime);
-                            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
-                            osc.start(audioContext.currentTime);
-                            osc.stop(audioContext.currentTime + 0.4);
-                        }, index * 100);
+                            gain.gain.setValueAtTime(0.4, context.currentTime);
+                            gain.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.5);
+                            osc.start(context.currentTime);
+                            osc.stop(context.currentTime + 0.5);
+                        }, index * 120);
                     });
-                }, 50);
-            } catch(e) {
-                console.log('Audio playback error:', e);
-            }
+                    console.log('Agent created sound played');
+                } catch(e) {
+                    console.log('Audio playback error:', e);
+                }
+            }, 100);
         })();
         </script>
         """,
         'story_rendered': """
         <script>
         (function() {
-            try {
-                const audioContext = window.getDenkenAudioContext ? window.getDenkenAudioContext() : null;
-                if (!audioContext) return;
-                
-                setTimeout(() => {
-                    if (audioContext.state === 'suspended') {
-                        audioContext.resume();
+            setTimeout(async () => {
+                try {
+                    const context = await window.ensureDenkenAudioReady();
+                    if (!context) {
+                        console.log('Audio context not available');
+                        return;
                     }
                     
                     // Play a magical ascending melody
@@ -157,76 +190,75 @@ def play_sound(sound_type):
                     
                     melody.forEach(note => {
                         setTimeout(() => {
-                            const oscillator = audioContext.createOscillator();
-                            const gainNode = audioContext.createGain();
+                            const oscillator = context.createOscillator();
+                            const gainNode = context.createGain();
                             oscillator.connect(gainNode);
-                            gainNode.connect(audioContext.destination);
+                            gainNode.connect(context.destination);
                             oscillator.frequency.value = note.freq;
                             oscillator.type = 'sine';
-                            gainNode.gain.setValueAtTime(0.25, audioContext.currentTime);
-                            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
-                            oscillator.start(audioContext.currentTime);
-                            oscillator.stop(audioContext.currentTime + 0.2);
+                            gainNode.gain.setValueAtTime(0.4, context.currentTime);
+                            gainNode.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.25);
+                            oscillator.start(context.currentTime);
+                            oscillator.stop(context.currentTime + 0.25);
                         }, note.time * 1000);
                     });
-                }, 50);
-            } catch(e) {
-                console.log('Audio playback error:', e);
-            }
+                    console.log('Story rendered sound played');
+                } catch(e) {
+                    console.log('Audio playback error:', e);
+                }
+            }, 100);
         })();
         </script>
         """,
         'answer_generated': """
         <script>
         (function() {
-            try {
-                const audioContext = window.getDenkenAudioContext ? window.getDenkenAudioContext() : null;
-                if (!audioContext) return;
-                
-                setTimeout(() => {
-                    if (audioContext.state === 'suspended') {
-                        audioContext.resume();
+            setTimeout(async () => {
+                try {
+                    const context = await window.ensureDenkenAudioReady();
+                    if (!context) {
+                        console.log('Audio context not available');
+                        return;
                     }
                     
-                    const oscillator = audioContext.createOscillator();
-                    const gainNode = audioContext.createGain();
+                    // Play a cheerful two-tone chime
+                    const oscillator = context.createOscillator();
+                    const gainNode = context.createGain();
                     
                     oscillator.connect(gainNode);
-                    gainNode.connect(audioContext.destination);
+                    gainNode.connect(context.destination);
                     
-                    // Play a cheerful two-tone chime
                     oscillator.frequency.value = 659.25; // E5
                     oscillator.type = 'sine';
-                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
-                    oscillator.start(audioContext.currentTime);
-                    oscillator.stop(audioContext.currentTime + 0.15);
+                    gainNode.gain.setValueAtTime(0.5, context.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.2);
+                    oscillator.start(context.currentTime);
+                    oscillator.stop(context.currentTime + 0.2);
                     
                     setTimeout(() => {
-                        const osc2 = audioContext.createOscillator();
-                        const gain2 = audioContext.createGain();
+                        const osc2 = context.createOscillator();
+                        const gain2 = context.createGain();
                         osc2.connect(gain2);
-                        gain2.connect(audioContext.destination);
+                        gain2.connect(context.destination);
                         osc2.frequency.value = 783.99; // G5
                         osc2.type = 'sine';
-                        gain2.gain.setValueAtTime(0.3, audioContext.currentTime);
-                        gain2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
-                        osc2.start(audioContext.currentTime);
-                        osc2.stop(audioContext.currentTime + 0.15);
-                    }, 150);
-                }, 50);
-            } catch(e) {
-                console.log('Audio playback error:', e);
-            }
+                        gain2.gain.setValueAtTime(0.5, context.currentTime);
+                        gain2.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.2);
+                        osc2.start(context.currentTime);
+                        osc2.stop(context.currentTime + 0.2);
+                    }, 200);
+                    console.log('Answer generated sound played');
+                } catch(e) {
+                    console.log('Audio playback error:', e);
+                }
+            }, 100);
         })();
         </script>
         """
     }
     
-    # Inject initialization script first (only once per page load)
-    if 'audio_initialized' not in st.session_state:
-        st.session_state.audio_initialized = True
-        st.markdown(init_audio_script, unsafe_allow_html=True)
+    # Inject initialization script (will run on every rerun but only initialize once)
+    st.markdown(init_audio_script, unsafe_allow_html=True)
     
     if sound_type in sound_scripts:
         st.markdown(sound_scripts[sound_type], unsafe_allow_html=True)
