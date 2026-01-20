@@ -644,6 +644,29 @@ def main():
         color: #ffffff !important;
     }
     
+    /* Light blue text for specific elements in dark mode */
+    [data-theme="dark"] .welcome-title,
+    [data-theme="dark"] .welcome-title * {
+        color: #60a5fa !important; /* Light blue */
+    }
+    
+    [data-theme="dark"] .version-number,
+    [data-theme="dark"] .version-number * {
+        color: #60a5fa !important; /* Light blue */
+    }
+    
+    [data-theme="dark"] .agent-number,
+    [data-theme="dark"] .agent-number *,
+    [data-theme="dark"] .agent-number strong {
+        color: #60a5fa !important; /* Light blue */
+    }
+    
+    [data-theme="dark"] .agent-name,
+    [data-theme="dark"] .agent-name *,
+    [data-theme="dark"] .agent-name strong {
+        color: #60a5fa !important; /* Light blue */
+    }
+    
     /* Override any Streamlit default dark mode text colors */
     [data-theme="dark"] p,
     [data-theme="dark"] span,
@@ -1015,11 +1038,11 @@ def main():
         else:
             # Debug: show which paths were checked
             st.info(f"Logo not found. Checked: {logo_paths}")
-        except Exception as e:
+    except Exception as e:
         st.error(f"Error loading logo: {e}")
     
     st.markdown(f"""
-            <h2 style="color: var(--primary-color); margin: 0; font-size: 1.1rem; font-weight: 400; text-align: right;">v{APP_VERSION}</h2>
+            <h2 class="version-number" style="color: var(--primary-color); margin: 0; font-size: 1.1rem; font-weight: 400; text-align: right;">v{APP_VERSION}</h2>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -1056,7 +1079,7 @@ def main():
         st.session_state.mission_example = generate_mission_example()
     
     if not st.session_state.show_agent_builder:
-        st.markdown("## Welcome to Denken Labs")
+        st.markdown('<h2 class="welcome-title">Welcome to Denken Labs</h2>', unsafe_allow_html=True)
         st.markdown('<div class="tagline-text">**Get ready for an exiting mission**</div>', unsafe_allow_html=True)
         
         # Build your own agent button - compact (purple)
@@ -1325,10 +1348,10 @@ def main():
                                         break
                             
                             # Display number below bot, left-aligned
-                            st.markdown(f"<div style='text-align: left; margin-top: 5px;'><strong>#{bot.get('number', bot_number)}</strong></div>", unsafe_allow_html=True)
+                            st.markdown(f"<div class='agent-number' style='text-align: left; margin-top: 5px;'><strong>#{bot.get('number', bot_number)}</strong></div>", unsafe_allow_html=True)
                         
                         with col2:
-                            st.markdown(f"**{bot['name']}**")
+                            st.markdown(f'<div class="agent-name"><strong>{bot["name"]}</strong></div>', unsafe_allow_html=True)
                             st.markdown(f"{bot['description']}")
                             # Display character profile if available
                             if bot.get('character'):
