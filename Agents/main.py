@@ -630,14 +630,14 @@ def main():
         color: #e2e8f0 !important;
     }
     
-    /* Story content in dark mode - make background transparent and text white for visibility */
+    /* Story content in dark mode - make background light and text black for visibility */
     /* Need to override inline style with maximum specificity */
     [data-theme="dark"] .story-content,
     [data-theme="dark"] div.story-content,
     [data-theme="dark"] .story-content[style],
     [data-theme="dark"] div.story-content[style] {
-        background-color: transparent !important; /* Transparent background in dark mode - override inline style */
-        color: #ffffff !important; /* Pure white text for maximum visibility */
+        background-color: #ffffff !important; /* White background in dark mode - override inline style */
+        color: #000000 !important; /* Black text for visibility on white background */
     }
     
     [data-theme="dark"] .story-content *,
@@ -650,8 +650,8 @@ def main():
     [data-theme="dark"] div.story-content span,
     [data-theme="dark"] div.story-content div,
     [data-theme="dark"] div.story-content br {
-        color: #ffffff !important; /* Pure white for all nested elements */
-        background-color: transparent !important; /* Ensure nested elements are transparent too */
+        color: #000000 !important; /* Black text for all nested elements */
+        background-color: #ffffff !important; /* White background for nested elements */
     }
     
     /* Light blue text for specific elements in dark mode */
