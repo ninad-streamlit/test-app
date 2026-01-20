@@ -316,7 +316,8 @@ def play_sound(sound_type):
     # Inject initialization script (will run on every rerun but only initialize once)
     st.markdown(init_audio_script, unsafe_allow_html=True)
     
-    if sound_type in sound_scripts:
+    # Only play sound if a valid sound type is provided
+    if sound_type and sound_type in sound_scripts:
         st.markdown(sound_scripts[sound_type], unsafe_allow_html=True)
 
 def generate_agent_example():
