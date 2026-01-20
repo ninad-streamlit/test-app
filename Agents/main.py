@@ -959,12 +959,17 @@ def main():
             favicon_size = 192
             img_resized = img.resize((favicon_size, favicon_size), Image.Resampling.LANCZOS)
             
+            # Ensure transparency is preserved - convert to RGBA if not already
+            if img_resized.mode != 'RGBA':
+                img_resized = img_resized.convert('RGBA')
+            
             # Save to a file in the same directory as the script
             # Use a filename that includes crop_percent so it changes when crop changes
             base_dir = os.path.dirname(__file__)
             crop_str = str(crop_percent).replace('.', '_')
             cropped_favicon_path = os.path.join(base_dir, f"favicon_cropped_{crop_str}.png")
-            img_resized.save(cropped_favicon_path, format='PNG', optimize=True)
+            # Save PNG with transparency preserved - don't use optimize=True as it can affect transparency
+            img_resized.save(cropped_favicon_path, format='PNG')
             
             # Use the cropped favicon file directly
             config['page_icon'] = cropped_favicon_path
