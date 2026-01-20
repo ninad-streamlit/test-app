@@ -2489,7 +2489,7 @@ def main():
                     # Fallback if reportlab not available or failed - use fpdf2
                     if not pdf_generated:
                         try:
-                            from fpdf2 import FPDF
+                            from fpdf import FPDF
                             
                             pdf = FPDF()
                             pdf.set_auto_page_break(auto=True, margin=15)
