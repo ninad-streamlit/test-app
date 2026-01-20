@@ -1804,16 +1804,19 @@ def main():
                                 background-clip: padding-box;" 
                          alt="Denken Labs Logo" />
                 </div>
+                """, unsafe_allow_html=True)
+                # Add JavaScript in a separate markdown call to prevent rendering issues
+                st.markdown("""
                 <script>
-                (function() {{
-                    function removeWhiteBackgrounds() {{
+                (function() {
+                    function removeWhiteBackgrounds() {
                         var logoImg = document.querySelector('img[alt="Denken Labs Logo"]');
-                        if (logoImg) {{
+                        if (logoImg) {
                             logoImg.style.background = 'transparent';
                             logoImg.style.backgroundColor = 'transparent';
                             var parent = logoImg.parentElement;
                             var depth = 0;
-                            while (parent && parent !== document.body && depth < 20) {{
+                            while (parent && parent !== document.body && depth < 20) {
                                 var computedStyle = window.getComputedStyle(parent);
                                 var bgColor = computedStyle.backgroundColor;
                                 if (bgColor && (
@@ -1824,44 +1827,44 @@ def main():
                                     bgColor.includes('rgba(255') ||
                                     bgColor.includes('rgba(250') ||
                                     bgColor.includes('rgba(249')
-                                )) {{
+                                )) {
                                     parent.style.background = 'transparent';
                                     parent.style.backgroundColor = 'transparent';
-                                }} else {{
-                                    if (document.documentElement.getAttribute('data-theme') === 'dark') {{
+                                } else {
+                                    if (document.documentElement.getAttribute('data-theme') === 'dark') {
                                         parent.style.background = 'transparent';
                                         parent.style.backgroundColor = 'transparent';
-                                    }}
-                                }}
+                                    }
+                                }
                                 parent = parent.parentElement;
                                 depth++;
-                            }}
-                        }}
-                    }}
+                            }
+                        }
+                    }
                     removeWhiteBackgrounds();
                     setTimeout(removeWhiteBackgrounds, 100);
-                    if (document.readyState === 'loading') {{
+                    if (document.readyState === 'loading') {
                         document.addEventListener('DOMContentLoaded', removeWhiteBackgrounds);
-                    }}
-                    var observer = new MutationObserver(function(mutations) {{
+                    }
+                    var observer = new MutationObserver(function(mutations) {
                         removeWhiteBackgrounds();
-                    }});
-                    observer.observe(document.body, {{
+                    });
+                    observer.observe(document.body, {
                         childList: true,
                         subtree: true,
                         attributes: true,
                         attributeFilter: ['style', 'class']
-                    }});
-                    var themeObserver = new MutationObserver(function(mutations) {{
+                    });
+                    var themeObserver = new MutationObserver(function(mutations) {
                         removeWhiteBackgrounds();
-                    }});
-                    if (document.documentElement) {{
-                        themeObserver.observe(document.documentElement, {{
+                    });
+                    if (document.documentElement) {
+                        themeObserver.observe(document.documentElement, {
                             attributes: true,
                             attributeFilter: ['data-theme']
-                        }});
-                    }}
-                }})();
+                        });
+                    }
+                })();
                 </script>
                 """, unsafe_allow_html=True)
         else:
