@@ -635,7 +635,9 @@ def main():
     [data-theme="dark"] .story-content,
     [data-theme="dark"] div.story-content,
     [data-theme="dark"] .story-content[style],
-    [data-theme="dark"] div.story-content[style] {
+    [data-theme="dark"] div.story-content[style],
+    [data-theme="dark"] .story-content[style*="background"],
+    [data-theme="dark"] div.story-content[style*="background"] {
         background-color: #ffffff !important; /* White background in dark mode - override inline style */
         color: #000000 !important; /* Black text for visibility on white background */
     }
@@ -645,13 +647,17 @@ def main():
     [data-theme="dark"] .story-content span,
     [data-theme="dark"] .story-content div,
     [data-theme="dark"] .story-content br,
+    [data-theme="dark"] .story-content strong,
+    [data-theme="dark"] .story-content em,
     [data-theme="dark"] div.story-content *,
     [data-theme="dark"] div.story-content p,
     [data-theme="dark"] div.story-content span,
     [data-theme="dark"] div.story-content div,
-    [data-theme="dark"] div.story-content br {
-        color: #000000 !important; /* Black text for all nested elements */
-        background-color: #ffffff !important; /* White background for nested elements */
+    [data-theme="dark"] div.story-content br,
+    [data-theme="dark"] div.story-content strong,
+    [data-theme="dark"] div.story-content em {
+        color: #000000 !important; /* Pure black text for all nested elements - maximum contrast */
+        background-color: transparent !important; /* Transparent background for nested elements */
     }
     
     /* Light blue text for specific elements in dark mode */
