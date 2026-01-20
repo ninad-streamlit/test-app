@@ -1250,83 +1250,113 @@ def main():
         st.session_state.mission_example = generate_mission_example()
     
     if not st.session_state.show_agent_builder:
-        # Use Streamlit's native title with custom CSS wrapper
+        # Try using CSS custom properties and direct DOM manipulation with highest priority
         st.markdown("""
+        <div id="welcome-container" style="--welcome-color-light: #1e293b; --welcome-color-dark: #bfdbfe;">
+            <h2 id="welcome-title-final" style="color: var(--welcome-color-light);">Welcome to Denken Labs</h2>
+        </div>
         <style>
-        /* Target Streamlit's h1 element that st.title() creates */
-        [data-theme="dark"] h1:has-text("Welcome to Denken Labs"),
-        [data-theme="dark"] h1.stTitle,
-        [data-theme="dark"] .stTitle h1,
-        [data-theme="dark"] h1[id*="welcome"],
-        [data-theme="dark"] h1[class*="welcome"] {
+        /* Use CSS custom properties that change based on theme */
+        [data-theme="dark"] #welcome-container {
+            --welcome-color-light: #bfdbfe;
+        }
+        [data-theme="dark"] #welcome-title-final {
+            color: var(--welcome-color-dark) !important;
             color: #bfdbfe !important;
         }
-        /* Also target by text content using attribute selector */
-        [data-theme="dark"] h1 {
+        [data-theme="dark"] #welcome-title-final * {
             color: #bfdbfe !important;
         }
         </style>
-        """, unsafe_allow_html=True)
-        
-        # Use st.title() which creates an h1 element that we can target
-        st.markdown('<h1 id="welcome-title-streamlit" class="welcome-title-streamlit" style="color: #1e293b;">Welcome to Denken Labs</h1>', unsafe_allow_html=True)
-        
-        # Add JavaScript that runs after Streamlit renders
-        st.markdown("""
         <script>
         (function() {
-            function forceWelcomeLight() {
+            'use strict';
+            var targetId = 'welcome-title-final';
+            var lightColor = '#bfdbfe';
+            
+            function applyColor() {
                 var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
                 if (!isDark) return;
                 
-                // Find all h1 elements
-                var allH1s = document.querySelectorAll('h1');
-                allH1s.forEach(function(h1) {
-                    var text = (h1.textContent || h1.innerText || '').trim();
-                    if (text === 'Welcome to Denken Labs') {
-                        // Use requestAnimationFrame for smoother updates
-                        requestAnimationFrame(function() {
-                            h1.style.cssText = (h1.style.cssText || '').replace(/color[^;]*;?/gi, '') + ' color: #bfdbfe !important;';
-                            h1.style.setProperty('color', '#bfdbfe', 'important');
-                            h1.setAttribute('data-forced-color', '#bfdbfe');
-                        });
+                var el = document.getElementById(targetId);
+                if (!el) {
+                    // Try to find by text if ID doesn't work
+                    var allH2s = document.querySelectorAll('h2');
+                    for (var i = 0; i < allH2s.length; i++) {
+                        if (allH2s[i].textContent.trim() === 'Welcome to Denken Labs') {
+                            el = allH2s[i];
+                            break;
+                        }
                     }
-                });
+                }
                 
-                // Also target by ID
-                var welcomeById = document.getElementById('welcome-title-streamlit');
-                if (welcomeById) {
-                    requestAnimationFrame(function() {
-                        welcomeById.style.cssText = (welcomeById.style.cssText || '').replace(/color[^;]*;?/gi, '') + ' color: #bfdbfe !important;';
-                        welcomeById.style.setProperty('color', '#bfdbfe', 'important');
-                    });
+                if (el) {
+                    // Remove all existing color styles
+                    el.style.removeProperty('color');
+                    // Apply new color with maximum priority
+                    el.style.setProperty('color', lightColor, 'important');
+                    // Also set directly
+                    el.style.color = lightColor;
+                    // Force reflow
+                    el.offsetHeight;
+                    // Apply again to ensure it sticks
+                    el.style.setProperty('color', lightColor, 'important');
                 }
             }
             
-            // Multiple execution strategies
-            forceWelcomeLight();
-            setTimeout(forceWelcomeLight, 0);
-            setTimeout(forceWelcomeLight, 10);
-            setTimeout(forceWelcomeLight, 50);
-            setTimeout(forceWelcomeLight, 100);
-            setInterval(forceWelcomeLight, 20);
+            // Execute immediately
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', applyColor);
+            } else {
+                applyColor();
+            }
             
-            // Watch for theme and DOM changes
+            // Execute multiple times with different strategies
+            setTimeout(applyColor, 0);
+            setTimeout(applyColor, 1);
+            setTimeout(applyColor, 5);
+            setTimeout(applyColor, 10);
+            setTimeout(applyColor, 25);
+            setTimeout(applyColor, 50);
+            setTimeout(applyColor, 100);
+            setTimeout(applyColor, 200);
+            
+            // Continuous polling
+            var intervalId = setInterval(function() {
+                applyColor();
+            }, 10); // Very frequent polling
+            
+            // Watch for theme changes
             var themeObserver = new MutationObserver(function() {
-                setTimeout(forceWelcomeLight, 0);
+                applyColor();
             });
-            themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
-            
-            var domObserver = new MutationObserver(function(mutations) {
-                mutations.forEach(function(mutation) {
-                    mutation.addedNodes.forEach(function(node) {
-                        if (node.nodeType === 1 && (node.tagName === 'H1' || node.querySelector && node.querySelector('h1'))) {
-                            setTimeout(forceWelcomeLight, 0);
-                        }
-                    });
+            if (document.documentElement) {
+                themeObserver.observe(document.documentElement, { 
+                    attributes: true, 
+                    attributeFilter: ['data-theme'],
+                    attributeOldValue: false
                 });
+            }
+            
+            // Watch for DOM changes
+            var domObserver = new MutationObserver(function() {
+                applyColor();
             });
-            domObserver.observe(document.body, { childList: true, subtree: true });
+            if (document.body) {
+                domObserver.observe(document.body, { 
+                    childList: true, 
+                    subtree: true 
+                });
+            }
+            
+            // Also listen to Streamlit events
+            if (window.addEventListener) {
+                window.addEventListener('streamlit:rerun', function() {
+                    setTimeout(applyColor, 0);
+                    setTimeout(applyColor, 10);
+                    setTimeout(applyColor, 50);
+                });
+            }
         })();
         </script>
         """, unsafe_allow_html=True)
