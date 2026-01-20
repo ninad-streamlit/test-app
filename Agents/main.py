@@ -2237,8 +2237,9 @@ def main():
                          alt="Denken Labs Logo" />
                 </div>
                 """, unsafe_allow_html=True)
-                # Add JavaScript in a separate markdown call to prevent rendering issues
-                st.markdown("""
+            
+            # Add JavaScript in a separate markdown call to prevent rendering issues
+            st.markdown("""
                 <script>
                 (function() {
                     function removeWhiteBackgrounds() {
