@@ -1950,6 +1950,7 @@ def main():
     }
     
     /* Agent number and name - make them bright white in dark mode for better visibility */
+    /* Use maximum specificity to override any inline styles */
     [data-theme="dark"] .agent-number,
     [data-theme="dark"] .agent-number *,
     [data-theme="dark"] .agent-number strong,
@@ -1957,11 +1958,10 @@ def main():
     [data-theme="dark"] div.agent-number,
     [data-theme="dark"] div.agent-number *,
     [data-theme="dark"] div.agent-number strong,
-    [data-theme="dark"] .agent-number[style*="color"],
-    [data-theme="dark"] .agent-number[style*="color"] *,
-    [data-theme="dark"] .agent-number[style*="color"] strong {
+    [data-theme="dark"] .agent-number[style],
+    [data-theme="dark"] .agent-number[style] *,
+    [data-theme="dark"] .agent-number[style] strong {
         color: #ffffff !important; /* Pure white for maximum visibility */
-        --agent-name-color: #ffffff !important;
     }
     
     [data-theme="dark"] .agent-name,
@@ -1983,9 +1983,10 @@ def main():
     [data-theme="dark"] [id^="agent-name-"],
     [data-theme="dark"] [id^="agent-name-"] *,
     [data-theme="dark"] [id^="agent-name-"] strong,
-    [data-theme="dark"] [style*="--agent-name-color"] {
+    [data-theme="dark"] [id^="agent-name-"][style],
+    [data-theme="dark"] [id^="agent-name-"][style] *,
+    [data-theme="dark"] [id^="agent-name-"][style] strong {
         color: #ffffff !important; /* Pure white for maximum visibility */
-        --agent-name-color: #ffffff !important;
     }
     
     /* Agent name - make them dark/visible in light mode */
@@ -2159,44 +2160,43 @@ def main():
         allSelectors.forEach(function(el) {
             // Use requestAnimationFrame for smooth updates
             requestAnimationFrame(function() {
-                // Get computed style to see what's actually applied
-                var computed = window.getComputedStyle(el);
-                var currentColor = computed.color;
-                
-                // Always force white in dark mode - be very aggressive
-                // Method 1: Direct style property with important
-                el.style.setProperty('color', '#ffffff', 'important');
-                
-                // Method 2: CSS variable override
-                el.style.setProperty('--agent-name-color', '#ffffff', 'important');
-                el.style.setProperty('color', 'var(--agent-name-color)', 'important');
-                
-                // Method 3: Direct color assignment
-                el.style.color = '#ffffff';
-                
-                // Method 4: Inline style manipulation - remove old color and add white
+                // CRITICAL: Remove ALL inline color styles first, then set white
                 var inlineStyle = el.getAttribute('style') || '';
-                // Remove any color declarations (including CSS variables)
-                inlineStyle = inlineStyle.replace(/color\\s*:[^;]*;?/gi, '');
-                inlineStyle = inlineStyle.replace(/--agent-name-color\\s*:[^;]*;?/gi, '');
-                // Add our bright white color with !important
-                inlineStyle += ' --agent-name-color: #ffffff !important;';
+                // Remove ALL color-related declarations (be very aggressive)
+                inlineStyle = inlineStyle.replace(/color\s*:\s*[^;!]*[!important]*;?/gi, '');
+                inlineStyle = inlineStyle.replace(/--agent-name-color\s*:\s*[^;!]*[!important]*;?/gi, '');
+                // Remove any CSS variable references
+                inlineStyle = inlineStyle.replace(/var\([^)]*\)/gi, '');
+                // Clean up extra semicolons and spaces
+                inlineStyle = inlineStyle.replace(/;\s*;/g, ';').replace(/^\s*;\s*|\s*;\s*$/g, '').trim();
+                // Now set white color directly (not using CSS variables)
+                if (inlineStyle && !inlineStyle.endsWith(';')) {
+                    inlineStyle += ';';
+                }
                 inlineStyle += ' color: #ffffff !important;';
                 el.setAttribute('style', inlineStyle);
+                
+                // Also use setProperty as backup
+                el.style.setProperty('color', '#ffffff', 'important');
+                el.style.removeProperty('--agent-name-color'); // Remove CSS variable entirely
                 
                 // Apply to all children with same intensity
                 var children = el.querySelectorAll('*');
                 children.forEach(function(child) {
                     requestAnimationFrame(function() {
-                        child.style.setProperty('color', '#ffffff', 'important');
-                        child.style.setProperty('--agent-name-color', '#ffffff', 'important');
-                        child.style.color = '#ffffff';
                         var childStyle = child.getAttribute('style') || '';
-                        childStyle = childStyle.replace(/color\\s*:[^;]*;?/gi, '');
-                        childStyle = childStyle.replace(/--agent-name-color\\s*:[^;]*;?/gi, '');
-                        childStyle += ' --agent-name-color: #ffffff !important;';
+                        // Remove ALL color-related declarations
+                        childStyle = childStyle.replace(/color\s*:\s*[^;!]*[!important]*;?/gi, '');
+                        childStyle = childStyle.replace(/--agent-name-color\s*:\s*[^;!]*[!important]*;?/gi, '');
+                        childStyle = childStyle.replace(/var\([^)]*\)/gi, '');
+                        childStyle = childStyle.replace(/;\s*;/g, ';').replace(/^\s*;\s*|\s*;\s*$/g, '').trim();
+                        if (childStyle && !childStyle.endsWith(';')) {
+                            childStyle += ';';
+                        }
                         childStyle += ' color: #ffffff !important;';
                         child.setAttribute('style', childStyle);
+                        child.style.setProperty('color', '#ffffff', 'important');
+                        child.style.removeProperty('--agent-name-color');
                     });
                 });
             });
@@ -2258,14 +2258,37 @@ def main():
         
         allSelectors.forEach(function(el) {
             requestAnimationFrame(function() {
+                // Remove ALL inline color styles first
+                var inlineStyle = el.getAttribute('style') || '';
+                inlineStyle = inlineStyle.replace(/color\s*:\s*[^;!]*[!important]*;?/gi, '');
+                inlineStyle = inlineStyle.replace(/--agent-name-color\s*:\s*[^;!]*[!important]*;?/gi, '');
+                inlineStyle = inlineStyle.replace(/var\([^)]*\)/gi, '');
+                inlineStyle = inlineStyle.replace(/;\s*;/g, ';').replace(/^\s*;\s*|\s*;\s*$/g, '').trim();
+                if (inlineStyle && !inlineStyle.endsWith(';')) {
+                    inlineStyle += ';';
+                }
+                inlineStyle += ' color: ' + targetColor + ' !important;';
+                el.setAttribute('style', inlineStyle);
+                
+                // Also use setProperty
                 el.style.setProperty('color', targetColor, 'important');
-                el.style.setProperty('--agent-name-color', targetColor, 'important');
+                el.style.removeProperty('--agent-name-color');
                 
                 // Apply to all children
                 var children = el.querySelectorAll('*');
                 children.forEach(function(child) {
+                    var childStyle = child.getAttribute('style') || '';
+                    childStyle = childStyle.replace(/color\s*:\s*[^;!]*[!important]*;?/gi, '');
+                    childStyle = childStyle.replace(/--agent-name-color\s*:\s*[^;!]*[!important]*;?/gi, '');
+                    childStyle = childStyle.replace(/var\([^)]*\)/gi, '');
+                    childStyle = childStyle.replace(/;\s*;/g, ';').replace(/^\s*;\s*|\s*;\s*$/g, '').trim();
+                    if (childStyle && !childStyle.endsWith(';')) {
+                        childStyle += ';';
+                    }
+                    childStyle += ' color: ' + targetColor + ' !important;';
+                    child.setAttribute('style', childStyle);
                     child.style.setProperty('color', targetColor, 'important');
-                    child.style.setProperty('--agent-name-color', targetColor, 'important');
+                    child.style.removeProperty('--agent-name-color');
                 });
             });
         });
@@ -3176,10 +3199,10 @@ def main():
                             st.markdown(f"<div class='agent-number' style='text-align: left; margin-top: 5px;'><strong>#{bot.get('number', bot_number)}</strong></div>", unsafe_allow_html=True)
                         
                         with col2:
-                            # Use inline style with ID and data attribute for maximum targeting
-                            # Use CSS variable and direct computed style override approach
+                            # Use ID and data attribute for targeting - NO inline color styles
+                            # Let CSS handle colors based on theme
                             agent_name_id = f"agent-name-{bot['id']}"
-                            st.markdown(f'<div id="{agent_name_id}" class="agent-name-bright" data-agent-name="true" style="--agent-name-color: #1e293b; color: var(--agent-name-color) !important;"><strong style="color: var(--agent-name-color) !important;">{bot["name"]}</strong></div>', unsafe_allow_html=True)
+                            st.markdown(f'<div id="{agent_name_id}" class="agent-name-bright" data-agent-name="true"><strong>{bot["name"]}</strong></div>', unsafe_allow_html=True)
                             st.markdown(f"{bot['description']}")
                             # Display character profile if available
                             if bot.get('character'):
