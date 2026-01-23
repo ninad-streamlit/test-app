@@ -3518,12 +3518,173 @@ def main():
                 
                 # Use Streamlit container styling (same as agent descriptions) - adapts to light/dark mode
                 with st.container():
+                    # Store story text in data attribute for text-to-speech
+                    story_text_clean = story_text.replace('"', '&quot;').replace("'", "&#39;")
                     st.markdown(f"""
-                    <div class="story-content" style='padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #6b46c1;'>
+                    <div class="story-content" id="story-content-div" data-story-text="{story_text_clean}" style='padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #6b46c1;'>
                         <div style='padding-left: 10px;'>
                             {story_html}
                         </div>
                     </div>
+                    """, unsafe_allow_html=True)
+                
+                # Speaker button for text-to-speech
+                col1, col2, col3 = st.columns([1, 1, 1])
+                with col2:
+                    st.markdown("""
+                    <div style='text-align: center; margin: 10px 0;'>
+                        <button id="read-story-btn" style='
+                            background-color: #6b46c1;
+                            color: white;
+                            border: none;
+                            padding: 12px 24px;
+                            border-radius: 8px;
+                            font-size: 16px;
+                            cursor: pointer;
+                            width: 100%;
+                            font-weight: 500;
+                        ' onmouseover="this.style.backgroundColor='#553c9a'" onmouseout="this.style.backgroundColor='#6b46c1'">
+                            🔊 Read Story Aloud
+                        </button>
+                    </div>
+                    <script>
+                    (function() {
+                        var isSpeaking = false;
+                        var currentUtterance = null;
+                        
+                        function readStory() {
+                            var storyDiv = document.querySelector('#story-content-div');
+                            if (!storyDiv) {
+                                // Fallback: find by class
+                                storyDiv = document.querySelector('.story-content');
+                            }
+                            
+                            if (!storyDiv) {
+                                alert('Story content not found.');
+                                return;
+                            }
+                            
+                            // Get story text from data attribute or extract from div
+                            var storyText = storyDiv.getAttribute('data-story-text');
+                            if (!storyText) {
+                                // Fallback: extract text from div content
+                                storyText = storyDiv.innerText || storyDiv.textContent || '';
+                            }
+                            
+                            // Clean up HTML entities
+                            var textarea = document.createElement('textarea');
+                            textarea.innerHTML = storyText;
+                            storyText = textarea.value;
+                            
+                            if (!storyText || storyText.trim() === '') {
+                                alert('No story text found.');
+                                return;
+                            }
+                            
+                            // Use Web Speech API to read the story
+                            if ('speechSynthesis' in window) {
+                                var button = document.getElementById('read-story-btn');
+                                
+                                if (isSpeaking) {
+                                    // Stop speaking
+                                    window.speechSynthesis.cancel();
+                                    isSpeaking = false;
+                                    if (button) {
+                                        button.textContent = '🔊 Read Story Aloud';
+                                        button.style.backgroundColor = '#6b46c1';
+                                    }
+                                    return;
+                                }
+                                
+                                // Cancel any ongoing speech
+                                window.speechSynthesis.cancel();
+                                
+                                // Load voices if not already loaded
+                                var voices = window.speechSynthesis.getVoices();
+                                if (voices.length === 0) {
+                                    window.speechSynthesis.onvoiceschanged = function() {
+                                        voices = window.speechSynthesis.getVoices();
+                                        startSpeaking(storyText, voices, button);
+                                    };
+                                } else {
+                                    startSpeaking(storyText, voices, button);
+                                }
+                            } else {
+                                alert('Text-to-speech is not supported in your browser. Please use Chrome, Edge, or Safari.');
+                            }
+                        }
+                        
+                        function startSpeaking(storyText, voices, button) {
+                            // Create speech utterance
+                            var utterance = new SpeechSynthesisUtterance(storyText);
+                            utterance.rate = 1.0; // Normal speed
+                            utterance.pitch = 1.0; // Normal pitch
+                            utterance.volume = 1.0; // Full volume
+                            
+                            // Try to use a good voice if available
+                            var preferredVoice = voices.find(function(voice) {
+                                return voice.lang.startsWith('en') && 
+                                       (voice.name.includes('Google') || 
+                                        voice.name.includes('Microsoft') ||
+                                        voice.name.includes('Samantha') ||
+                                        voice.name.includes('Alex') ||
+                                        voice.name.includes('Karen'));
+                            });
+                            if (preferredVoice) {
+                                utterance.voice = preferredVoice;
+                            } else if (voices.length > 0) {
+                                // Use first English voice
+                                var englishVoice = voices.find(function(voice) {
+                                    return voice.lang.startsWith('en');
+                                });
+                                if (englishVoice) {
+                                    utterance.voice = englishVoice;
+                                }
+                            }
+                            
+                            // Update button when speaking starts
+                            utterance.onstart = function() {
+                                isSpeaking = true;
+                                currentUtterance = utterance;
+                                if (button) {
+                                    button.textContent = '⏸️ Stop Reading';
+                                    button.style.backgroundColor = '#dc2626';
+                                }
+                            };
+                            
+                            // Update button when speaking ends
+                            utterance.onend = function() {
+                                isSpeaking = false;
+                                currentUtterance = null;
+                                if (button) {
+                                    button.textContent = '🔊 Read Story Aloud';
+                                    button.style.backgroundColor = '#6b46c1';
+                                }
+                            };
+                            
+                            // Handle errors
+                            utterance.onerror = function(event) {
+                                console.error('Speech synthesis error:', event);
+                                isSpeaking = false;
+                                currentUtterance = null;
+                                if (button) {
+                                    button.textContent = '🔊 Read Story Aloud';
+                                    button.style.backgroundColor = '#6b46c1';
+                                }
+                                alert('Error reading story: ' + (event.error || 'Unknown error'));
+                            };
+                            
+                            // Speak the story
+                            window.speechSynthesis.speak(utterance);
+                        }
+                        
+                        // Attach click handler to button
+                        var button = document.getElementById('read-story-btn');
+                        if (button) {
+                            button.addEventListener('click', readStory);
+                        }
+                    })();
+                    </script>
                     """, unsafe_allow_html=True)
                 
                 # Q&A Section
