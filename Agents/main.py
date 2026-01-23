@@ -2005,23 +2005,55 @@ def main():
         color: #ffffff !important; /* White for good contrast in dark mode */
     }
     
-    /* Agent name - make them dark/visible in light mode (only when NOT in dark mode) */
-    html:not([data-theme="dark"]) .agent-name,
-    html:not([data-theme="dark"]) .agent-name *,
-    html:not([data-theme="dark"]) .agent-name strong,
-    html:not([data-theme="dark"]) div.agent-name,
-    html:not([data-theme="dark"]) div.agent-name *,
-    html:not([data-theme="dark"]) div.agent-name strong,
-    html:not([data-theme="dark"]) .agent-name-bright,
-    html:not([data-theme="dark"]) .agent-name-bright *,
-    html:not([data-theme="dark"]) .agent-name-bright strong,
-    html:not([data-theme="dark"]) div.agent-name-bright,
-    html:not([data-theme="dark"]) div.agent-name-bright *,
-    html:not([data-theme="dark"]) div.agent-name-bright strong,
-    html:not([data-theme="dark"]) [data-agent-name="true"],
-    html:not([data-theme="dark"]) [data-agent-name="true"] *,
-    html:not([data-theme="dark"]) [data-agent-name="true"] strong {
-        color: #1e293b !important; /* Dark color for light mode visibility */
+    /* Agent name and number - DEFAULT to white (works in dark mode) */
+    /* This is the rule that's actually being applied, so make it white */
+    .agent-name,
+    .agent-name *,
+    .agent-name strong,
+    div.agent-name,
+    div.agent-name *,
+    div.agent-name strong,
+    .agent-name-bright,
+    .agent-name-bright *,
+    .agent-name-bright strong,
+    div.agent-name-bright,
+    div.agent-name-bright *,
+    div.agent-name-bright strong,
+    [data-agent-name="true"],
+    [data-agent-name="true"] *,
+    [data-agent-name="true"] strong,
+    .agent-number,
+    .agent-number *,
+    .agent-number strong,
+    div.agent-number,
+    div.agent-number *,
+    div.agent-number strong {
+        color: #ffffff !important; /* White - works in dark mode */
+    }
+    
+    /* Light mode override - only apply dark color when explicitly in light mode */
+    html[data-theme="light"] .agent-name,
+    html[data-theme="light"] .agent-name *,
+    html[data-theme="light"] .agent-name strong,
+    html[data-theme="light"] div.agent-name,
+    html[data-theme="light"] div.agent-name *,
+    html[data-theme="light"] div.agent-name strong,
+    html[data-theme="light"] .agent-name-bright,
+    html[data-theme="light"] .agent-name-bright *,
+    html[data-theme="light"] .agent-name-bright strong,
+    html[data-theme="light"] div.agent-name-bright,
+    html[data-theme="light"] div.agent-name-bright *,
+    html[data-theme="light"] div.agent-name-bright strong,
+    html[data-theme="light"] [data-agent-name="true"],
+    html[data-theme="light"] [data-agent-name="true"] *,
+    html[data-theme="light"] [data-agent-name="true"] strong,
+    html[data-theme="light"] .agent-number,
+    html[data-theme="light"] .agent-number *,
+    html[data-theme="light"] .agent-number strong,
+    html[data-theme="light"] div.agent-number,
+    html[data-theme="light"] div.agent-number *,
+    html[data-theme="light"] div.agent-number strong {
+        color: #1e293b !important; /* Dark color for light mode */
     }
     
     /* CRITICAL: Ultra-specific dark mode overrides that come AFTER light mode rules */
