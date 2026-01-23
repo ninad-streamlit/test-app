@@ -3507,26 +3507,35 @@ def main():
                 # Display story content - use Streamlit container styling like agent descriptions
                 st.markdown("<br>", unsafe_allow_html=True)
                 st.markdown("### 📚 The Story")
-                # Convert story text to HTML - handle both single and double newlines
-                story_text = st.session_state.mission_story
+                # Get story text and clean it
+                story_text = st.session_state.mission_story.strip()
+                
+                # Remove any HTML tags that might have been accidentally included in the story
+                import re
+                import html
+                # Remove any HTML tags from the story text
+                story_text = re.sub(r'<[^>]+>', '', story_text)
+                
                 # Replace double newlines with paragraph breaks
                 story_paragraphs = story_text.split('\n\n')
                 story_html_parts = []
                 for para in story_paragraphs:
                     if para.strip():
+                        # Escape HTML in paragraph text to prevent injection
+                        para_escaped = html.escape(para.strip())
                         # Replace single newlines within paragraphs with line breaks
-                        para = para.replace('\n', '<br>')
+                        para_escaped = para_escaped.replace('\n', '<br>')
                         # Wrap each paragraph in a div
-                        story_html_parts.append(f'{para}<br><br>')
+                        story_html_parts.append(f'{para_escaped}<br><br>')
                 story_html = ''.join(story_html_parts).rstrip('<br><br>')
                 
                 # Use Streamlit container styling (same as agent descriptions) - adapts to light/dark mode
                 with st.container():
-                    # Store story text in data attribute for text-to-speech
-                    story_text_clean = story_text.replace('"', '&quot;').replace("'", "&#39;")
+                    # Store story text in data attribute for text-to-speech (escape for HTML attribute)
+                    story_text_for_attr = story_text.replace('"', '&quot;').replace("'", "&#39;").replace('<', '&lt;').replace('>', '&gt;')
                     st.markdown(f"""
-                    <div class="story-content" id="story-content-div" data-story-text="{story_text_clean}" style='padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #6b46c1;'>
-                        <div style='padding-left: 10px;'>
+                    <div class="story-content" id="story-content-div" data-story-text="{story_text_for_attr}" style="padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #6b46c1;">
+                        <div style="padding-left: 10px;">
                             {story_html}
                         </div>
                     </div>
