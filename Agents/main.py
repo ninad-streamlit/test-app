@@ -2081,6 +2081,25 @@ def main():
         color: #ffffff !important; /* Force white in dark mode */
     }
     
+    /* CRITICAL: Override Streamlit's .stMarkdown strong rule specifically for agent elements */
+    /* These must have higher specificity than .stMarkdown strong */
+    html[data-theme="dark"] body .stMarkdown .agent-name-bright strong,
+    html[data-theme="dark"] body .stMarkdown .agent-name-bright strong *,
+    html[data-theme="dark"] body .stMarkdown div.agent-name-bright strong,
+    html[data-theme="dark"] body .stMarkdown [data-agent-name="true"] strong,
+    html[data-theme="dark"] body .stMarkdown [id^="agent-name-"] strong,
+    html[data-theme="dark"] body .stMarkdown .agent-number strong,
+    html[data-theme="dark"] body .stMarkdown div.agent-number strong,
+    body[data-theme="dark"] .stMarkdown .agent-name-bright strong,
+    body[data-theme="dark"] .stMarkdown .agent-name-bright strong *,
+    body[data-theme="dark"] .stMarkdown div.agent-name-bright strong,
+    body[data-theme="dark"] .stMarkdown [data-agent-name="true"] strong,
+    body[data-theme="dark"] .stMarkdown [id^="agent-name-"] strong,
+    body[data-theme="dark"] .stMarkdown .agent-number strong,
+    body[data-theme="dark"] .stMarkdown div.agent-number strong {
+        color: #ffffff !important; /* Override Streamlit's var(--text-primary) */
+    }
+    
     /* Override any Streamlit default dark mode text colors */
     [data-theme="dark"] p,
     [data-theme="dark"] span,
@@ -2272,6 +2291,21 @@ def main():
                 body[data-theme="dark"] div.agent-number strong {
                     color: #ffffff !important;
                 }
+                /* CRITICAL: Override Streamlit's .stMarkdown strong rule */
+                html[data-theme="dark"] body .stMarkdown .agent-name-bright strong,
+                html[data-theme="dark"] body .stMarkdown div.agent-name-bright strong,
+                html[data-theme="dark"] body .stMarkdown [data-agent-name="true"] strong,
+                html[data-theme="dark"] body .stMarkdown [id^="agent-name-"] strong,
+                html[data-theme="dark"] body .stMarkdown .agent-number strong,
+                html[data-theme="dark"] body .stMarkdown div.agent-number strong,
+                body[data-theme="dark"] .stMarkdown .agent-name-bright strong,
+                body[data-theme="dark"] .stMarkdown div.agent-name-bright strong,
+                body[data-theme="dark"] .stMarkdown [data-agent-name="true"] strong,
+                body[data-theme="dark"] .stMarkdown [id^="agent-name-"] strong,
+                body[data-theme="dark"] .stMarkdown .agent-number strong,
+                body[data-theme="dark"] .stMarkdown div.agent-number strong {
+                    color: #ffffff !important;
+                }
             `;
             document.head.appendChild(style);
         }
@@ -2311,6 +2345,12 @@ def main():
                             child.style.setProperty('color', targetColor, 'important');
                         });
                     });
+                });
+                
+                // CRITICAL: Specifically target strong tags within .stMarkdown that contain agent elements
+                // This directly overrides Streamlit's .stMarkdown strong rule
+                document.querySelectorAll('.stMarkdown .agent-name-bright strong, .stMarkdown .agent-number strong, .stMarkdown [data-agent-name="true"] strong, .stMarkdown [id^="agent-name-"] strong').forEach(function(el) {
+                    el.style.setProperty('color', targetColor, 'important');
                 });
             } catch(e) {
                 console.error('Error in forceAgentColors:', e);
