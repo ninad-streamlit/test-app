@@ -2024,6 +2024,63 @@ def main():
         color: #1e293b !important; /* Dark color for light mode visibility */
     }
     
+    /* CRITICAL: Ultra-specific dark mode overrides that come AFTER light mode rules */
+    /* These MUST override the light mode rules above */
+    html[data-theme="dark"] body .stMarkdown div.agent-name-bright,
+    html[data-theme="dark"] body .stMarkdown div.agent-name-bright *,
+    html[data-theme="dark"] body .stMarkdown div.agent-name-bright strong,
+    html[data-theme="dark"] body .stMarkdown [data-agent-name="true"],
+    html[data-theme="dark"] body .stMarkdown [data-agent-name="true"] *,
+    html[data-theme="dark"] body .stMarkdown [data-agent-name="true"] strong,
+    html[data-theme="dark"] body .stMarkdown [id^="agent-name-"],
+    html[data-theme="dark"] body .stMarkdown [id^="agent-name-"] *,
+    html[data-theme="dark"] body .stMarkdown [id^="agent-name-"] strong,
+    html[data-theme="dark"] body div.agent-name-bright,
+    html[data-theme="dark"] body div.agent-name-bright *,
+    html[data-theme="dark"] body div.agent-name-bright strong,
+    html[data-theme="dark"] body [data-agent-name="true"],
+    html[data-theme="dark"] body [data-agent-name="true"] *,
+    html[data-theme="dark"] body [data-agent-name="true"] strong,
+    html[data-theme="dark"] body [id^="agent-name-"],
+    html[data-theme="dark"] body [id^="agent-name-"] *,
+    html[data-theme="dark"] body [id^="agent-name-"] strong,
+    html[data-theme="dark"] body .stMarkdown div.agent-number,
+    html[data-theme="dark"] body .stMarkdown div.agent-number *,
+    html[data-theme="dark"] body .stMarkdown div.agent-number strong,
+    html[data-theme="dark"] body div.agent-number,
+    html[data-theme="dark"] body div.agent-number *,
+    html[data-theme="dark"] body div.agent-number strong {
+        color: #ffffff !important; /* Force white in dark mode - override everything */
+    }
+    
+    /* Also handle if data-theme is on body instead of html */
+    body[data-theme="dark"] .stMarkdown div.agent-name-bright,
+    body[data-theme="dark"] .stMarkdown div.agent-name-bright *,
+    body[data-theme="dark"] .stMarkdown div.agent-name-bright strong,
+    body[data-theme="dark"] .stMarkdown [data-agent-name="true"],
+    body[data-theme="dark"] .stMarkdown [data-agent-name="true"] *,
+    body[data-theme="dark"] .stMarkdown [data-agent-name="true"] strong,
+    body[data-theme="dark"] .stMarkdown [id^="agent-name-"],
+    body[data-theme="dark"] .stMarkdown [id^="agent-name-"] *,
+    body[data-theme="dark"] .stMarkdown [id^="agent-name-"] strong,
+    body[data-theme="dark"] div.agent-name-bright,
+    body[data-theme="dark"] div.agent-name-bright *,
+    body[data-theme="dark"] div.agent-name-bright strong,
+    body[data-theme="dark"] [data-agent-name="true"],
+    body[data-theme="dark"] [data-agent-name="true"] *,
+    body[data-theme="dark"] [data-agent-name="true"] strong,
+    body[data-theme="dark"] [id^="agent-name-"],
+    body[data-theme="dark"] [id^="agent-name-"] *,
+    body[data-theme="dark"] [id^="agent-name-"] strong,
+    body[data-theme="dark"] .stMarkdown div.agent-number,
+    body[data-theme="dark"] .stMarkdown div.agent-number *,
+    body[data-theme="dark"] .stMarkdown div.agent-number strong,
+    body[data-theme="dark"] div.agent-number,
+    body[data-theme="dark"] div.agent-number *,
+    body[data-theme="dark"] div.agent-number strong {
+        color: #ffffff !important; /* Force white in dark mode */
+    }
+    
     /* Override any Streamlit default dark mode text colors */
     [data-theme="dark"] p,
     [data-theme="dark"] span,
@@ -2158,26 +2215,61 @@ def main():
     // ULTIMATE FIX: Inject CSS dynamically AND force inline styles
     (function() {
         // First, inject CSS rules dynamically to ensure they load after Streamlit's CSS
+        // These MUST override the light mode rules that are incorrectly applying
         var styleId = 'agent-color-fix-dynamic';
         if (!document.getElementById(styleId)) {
             var style = document.createElement('style');
             style.id = styleId;
             style.textContent = `
-                html[data-theme="dark"] [data-agent-element="true"],
-                html[data-theme="dark"] [data-agent-element="true"] *,
-                html[data-theme="dark"] [data-agent-element="true"] strong,
-                html[data-theme="dark"] .agent-number,
-                html[data-theme="dark"] .agent-number *,
-                html[data-theme="dark"] .agent-number strong,
-                html[data-theme="dark"] .agent-name-bright,
-                html[data-theme="dark"] .agent-name-bright *,
-                html[data-theme="dark"] .agent-name-bright strong,
-                html[data-theme="dark"] [data-agent-name="true"],
-                html[data-theme="dark"] [data-agent-name="true"] *,
-                html[data-theme="dark"] [data-agent-name="true"] strong,
-                html[data-theme="dark"] [id^="agent-name-"],
-                html[data-theme="dark"] [id^="agent-name-"] *,
-                html[data-theme="dark"] [id^="agent-name-"] strong {
+                /* Ultra-specific dark mode rules to override light mode rules */
+                html[data-theme="dark"] body .stMarkdown div.agent-name-bright,
+                html[data-theme="dark"] body .stMarkdown div.agent-name-bright *,
+                html[data-theme="dark"] body .stMarkdown div.agent-name-bright strong,
+                html[data-theme="dark"] body .stMarkdown [data-agent-name="true"],
+                html[data-theme="dark"] body .stMarkdown [data-agent-name="true"] *,
+                html[data-theme="dark"] body .stMarkdown [data-agent-name="true"] strong,
+                html[data-theme="dark"] body .stMarkdown [id^="agent-name-"],
+                html[data-theme="dark"] body .stMarkdown [id^="agent-name-"] *,
+                html[data-theme="dark"] body .stMarkdown [id^="agent-name-"] strong,
+                html[data-theme="dark"] body div.agent-name-bright,
+                html[data-theme="dark"] body div.agent-name-bright *,
+                html[data-theme="dark"] body div.agent-name-bright strong,
+                html[data-theme="dark"] body [data-agent-name="true"],
+                html[data-theme="dark"] body [data-agent-name="true"] *,
+                html[data-theme="dark"] body [data-agent-name="true"] strong,
+                html[data-theme="dark"] body [id^="agent-name-"],
+                html[data-theme="dark"] body [id^="agent-name-"] *,
+                html[data-theme="dark"] body [id^="agent-name-"] strong,
+                html[data-theme="dark"] body .stMarkdown div.agent-number,
+                html[data-theme="dark"] body .stMarkdown div.agent-number *,
+                html[data-theme="dark"] body .stMarkdown div.agent-number strong,
+                html[data-theme="dark"] body div.agent-number,
+                html[data-theme="dark"] body div.agent-number *,
+                html[data-theme="dark"] body div.agent-number strong,
+                body[data-theme="dark"] .stMarkdown div.agent-name-bright,
+                body[data-theme="dark"] .stMarkdown div.agent-name-bright *,
+                body[data-theme="dark"] .stMarkdown div.agent-name-bright strong,
+                body[data-theme="dark"] .stMarkdown [data-agent-name="true"],
+                body[data-theme="dark"] .stMarkdown [data-agent-name="true"] *,
+                body[data-theme="dark"] .stMarkdown [data-agent-name="true"] strong,
+                body[data-theme="dark"] .stMarkdown [id^="agent-name-"],
+                body[data-theme="dark"] .stMarkdown [id^="agent-name-"] *,
+                body[data-theme="dark"] .stMarkdown [id^="agent-name-"] strong,
+                body[data-theme="dark"] div.agent-name-bright,
+                body[data-theme="dark"] div.agent-name-bright *,
+                body[data-theme="dark"] div.agent-name-bright strong,
+                body[data-theme="dark"] [data-agent-name="true"],
+                body[data-theme="dark"] [data-agent-name="true"] *,
+                body[data-theme="dark"] [data-agent-name="true"] strong,
+                body[data-theme="dark"] [id^="agent-name-"],
+                body[data-theme="dark"] [id^="agent-name-"] *,
+                body[data-theme="dark"] [id^="agent-name-"] strong,
+                body[data-theme="dark"] .stMarkdown div.agent-number,
+                body[data-theme="dark"] .stMarkdown div.agent-number *,
+                body[data-theme="dark"] .stMarkdown div.agent-number strong,
+                body[data-theme="dark"] div.agent-number,
+                body[data-theme="dark"] div.agent-number *,
+                body[data-theme="dark"] div.agent-number strong {
                     color: #ffffff !important;
                 }
             `;
@@ -2187,7 +2279,10 @@ def main():
         // Second, force inline styles as ultimate backup
         function forceAgentColors() {
             try {
-                var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                // Check both html and body for data-theme attribute
+                var htmlTheme = document.documentElement.getAttribute('data-theme');
+                var bodyTheme = document.body ? document.body.getAttribute('data-theme') : null;
+                var isDark = htmlTheme === 'dark' || bodyTheme === 'dark';
                 if (!isDark) return; // Only force in dark mode
                 
                 var targetColor = '#ffffff';
