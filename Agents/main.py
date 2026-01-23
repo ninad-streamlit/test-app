@@ -1886,7 +1886,7 @@ def main():
         color: #bfdbfe !important; /* Very light blue - lighter for better visibility */
     }
     
-    /* Agent number and name - make them very light/white in dark mode */
+    /* Agent number and name - make them bright white in dark mode for better visibility */
     [data-theme="dark"] .agent-number,
     [data-theme="dark"] .agent-number *,
     [data-theme="dark"] .agent-number strong,
@@ -1894,7 +1894,7 @@ def main():
     [data-theme="dark"] div.agent-number,
     [data-theme="dark"] div.agent-number *,
     [data-theme="dark"] div.agent-number strong {
-        color: #dbeafe !important; /* Very light blue - even lighter for better visibility */
+        color: #ffffff !important; /* Pure white for maximum visibility */
     }
     
     [data-theme="dark"] .agent-name,
@@ -1904,7 +1904,7 @@ def main():
     [data-theme="dark"] div.agent-name,
     [data-theme="dark"] div.agent-name *,
     [data-theme="dark"] div.agent-name strong {
-        color: #dbeafe !important; /* Very light blue - even lighter for better visibility */
+        color: #ffffff !important; /* Pure white for maximum visibility */
     }
     
     /* Agent name - make them dark/visible in light mode */
@@ -2063,14 +2063,16 @@ def main():
         var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
         if (!isDark) return;
         
-        // Target all agent names using multiple selector strategies
+        // Target all agent names and numbers using multiple selector strategies
         var allSelectors = document.querySelectorAll(
             '[id^="agent-name-"], ' +
             '[data-agent-name="true"], ' +
             '.agent-name-bright, ' +
             '.agent-name, ' +
             'div.agent-name-bright, ' +
-            'div.agent-name'
+            'div.agent-name, ' +
+            '.agent-number, ' +
+            'div.agent-number'
         );
         
         allSelectors.forEach(function(el) {
@@ -2159,19 +2161,21 @@ def main():
     });
     domObserver.observe(document.body, { childList: true, subtree: true });
     
-    // Force agent names to be visible - dark in light mode, light in dark mode
+    // Force agent names and numbers to be visible - dark in light mode, bright white in dark mode
     function forceAgentNamesLight() {
         var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-        var targetColor = isDark ? '#dbeafe' : '#1e293b'; // Light blue in dark mode, dark in light mode
+        var targetColor = isDark ? '#ffffff' : '#1e293b'; // Pure white in dark mode, dark in light mode
         
-        // Target all agent names using multiple selector strategies
+        // Target all agent names and numbers using multiple selector strategies
         var allSelectors = document.querySelectorAll(
             '[id^="agent-name-"], ' +
             '[data-agent-name="true"], ' +
             '.agent-name-bright, ' +
             '.agent-name, ' +
             'div.agent-name-bright, ' +
-            'div.agent-name'
+            'div.agent-name, ' +
+            '.agent-number, ' +
+            'div.agent-number'
         );
         
         allSelectors.forEach(function(el) {
