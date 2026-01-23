@@ -3202,6 +3202,18 @@ def main():
                             story_title = story_data.get("title", "The Amazing Team Adventure")
                             story_content = story_data.get("story", "")
                             
+                            # Clean the story content - remove any HTML tags, attributes, or code
+                            import re
+                            import html
+                            # Remove all HTML tags and their attributes
+                            story_content = re.sub(r'<[^>]+>', '', story_content)
+                            # Remove any style attributes that might appear as plain text
+                            story_content = re.sub(r'style\s*=\s*["\'][^"\']*["\']', '', story_content, flags=re.IGNORECASE)
+                            # Remove any remaining HTML entities or code-like patterns
+                            story_content = re.sub(r'&[a-z]+;', '', story_content, flags=re.IGNORECASE)
+                            # Clean up extra whitespace
+                            story_content = story_content.strip()
+                            
                             # Validate story has paragraphs
                             if story_content and len(story_content.strip()) > 50:
                                 # Ensure story has proper paragraph breaks
@@ -3210,6 +3222,17 @@ def main():
                                     # Split by \n and rejoin with \n\n
                                     paragraphs = [p.strip() for p in story_content.split('\n') if p.strip()]
                                     story_content = '\n\n'.join(paragraphs)
+                                
+                                # Remove duplicate paragraphs
+                                paragraphs = story_content.split('\n\n')
+                                seen_paragraphs = set()
+                                unique_paragraphs = []
+                                for para in paragraphs:
+                                    para_clean = para.strip()
+                                    if para_clean and para_clean not in seen_paragraphs:
+                                        seen_paragraphs.add(para_clean)
+                                        unique_paragraphs.append(para_clean)
+                                story_content = '\n\n'.join(unique_paragraphs)
                                 
                                 st.session_state.mission_story_title = story_title
                                 st.session_state.mission_story = story_content
@@ -3241,11 +3264,34 @@ def main():
                                 retry_title = retry_data.get("title", "The Amazing Team Adventure")
                                 retry_story = retry_data.get("story", "")
                                 
+                                # Clean the retry story content - remove any HTML tags, attributes, or code
+                                import re
+                                import html
+                                # Remove all HTML tags and their attributes
+                                retry_story = re.sub(r'<[^>]+>', '', retry_story)
+                                # Remove any style attributes that might appear as plain text
+                                retry_story = re.sub(r'style\s*=\s*["\'][^"\']*["\']', '', retry_story, flags=re.IGNORECASE)
+                                # Remove any remaining HTML entities or code-like patterns
+                                retry_story = re.sub(r'&[a-z]+;', '', retry_story, flags=re.IGNORECASE)
+                                # Clean up extra whitespace
+                                retry_story = retry_story.strip()
+                                
                                 if retry_story and len(retry_story.strip()) > 50:
                                     # Fix paragraph breaks if needed
                                     if '\n\n' not in retry_story and '\n' in retry_story:
                                         paragraphs = [p.strip() for p in retry_story.split('\n') if p.strip()]
                                         retry_story = '\n\n'.join(paragraphs)
+                                    
+                                    # Remove duplicate paragraphs
+                                    paragraphs = retry_story.split('\n\n')
+                                    seen_paragraphs = set()
+                                    unique_paragraphs = []
+                                    for para in paragraphs:
+                                        para_clean = para.strip()
+                                        if para_clean and para_clean not in seen_paragraphs:
+                                            seen_paragraphs.add(para_clean)
+                                            unique_paragraphs.append(para_clean)
+                                    retry_story = '\n\n'.join(unique_paragraphs)
                                     
                                     st.session_state.mission_story_title = retry_title
                                     st.session_state.mission_story = retry_story
@@ -3522,25 +3568,42 @@ def main():
                 # Display story content - use Streamlit container styling like agent descriptions
                 st.markdown("<br>", unsafe_allow_html=True)
                 st.markdown("### 📚 The Story")
-                # Get story text and clean it
+                # Get story text and clean it aggressively
                 story_text = st.session_state.mission_story.strip()
                 
-                # Remove any HTML tags that might have been accidentally included in the story
+                # Remove any HTML tags, attributes, or code that might have been included
                 import re
                 import html
-                # Remove any HTML tags from the story text
+                # Remove all HTML tags and their attributes
                 story_text = re.sub(r'<[^>]+>', '', story_text)
+                # Remove any style attributes that might appear as plain text (even outside tags)
+                story_text = re.sub(r'style\s*=\s*["\'][^"\']*["\']', '', story_text, flags=re.IGNORECASE)
+                # Remove any HTML entities
+                story_text = re.sub(r'&[a-z]+;', '', story_text, flags=re.IGNORECASE)
+                # Remove any remaining code-like patterns (CSS, HTML attributes, etc.)
+                story_text = re.sub(r'\b(padding|border|margin|color|background|font|width|height|style)\s*[:=][^;}\s]+', '', story_text, flags=re.IGNORECASE)
+                # Clean up extra whitespace
+                story_text = story_text.strip()
                 
-                # Replace double newlines with paragraph breaks
+                # Remove duplicate paragraphs
                 story_paragraphs = story_text.split('\n\n')
-                story_html_parts = []
+                seen_paragraphs = set()
+                unique_paragraphs = []
                 for para in story_paragraphs:
+                    para_clean = para.strip()
+                    if para_clean and para_clean not in seen_paragraphs:
+                        seen_paragraphs.add(para_clean)
+                        unique_paragraphs.append(para_clean)
+                
+                # Build HTML from unique paragraphs
+                story_html_parts = []
+                for para in unique_paragraphs:
                     if para.strip():
                         # Escape HTML in paragraph text to prevent injection
                         para_escaped = html.escape(para.strip())
                         # Replace single newlines within paragraphs with line breaks
                         para_escaped = para_escaped.replace('\n', '<br>')
-                        # Wrap each paragraph in a div
+                        # Wrap each paragraph
                         story_html_parts.append(f'{para_escaped}<br><br>')
                 story_html = ''.join(story_html_parts).rstrip('<br><br>')
                 
