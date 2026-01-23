@@ -1949,65 +1949,79 @@ def main():
         color: #bfdbfe !important; /* Very light blue - lighter for better visibility */
     }
     
-    /* Agent name - make them dark/visible in light mode */
-    .agent-name,
-    .agent-name *,
-    .agent-name strong,
-    .agent-name div,
-    div.agent-name,
-    div.agent-name *,
-    div.agent-name strong,
-    .agent-name-bright,
-    .agent-name-bright *,
-    .agent-name-bright strong,
-    div.agent-name-bright,
-    div.agent-name-bright *,
-    div.agent-name-bright strong,
-    [data-agent-name="true"],
-    [data-agent-name="true"] *,
-    [data-agent-name="true"] strong {
-        color: #1e293b !important; /* Dark color for light mode visibility */
-    }
-    
-    /* Agent number and name - make them light/readable in dark mode - MUST come after light mode rules */
-    /* Use maximum specificity to override light mode rules */
-    html[data-theme="dark"] .agent-number,
-    html[data-theme="dark"] .agent-number *,
-    html[data-theme="dark"] .agent-number strong,
-    html[data-theme="dark"] div.agent-number,
-    html[data-theme="dark"] div.agent-number *,
-    html[data-theme="dark"] div.agent-number strong,
+    /* Agent number and name - make them light/readable in dark mode */
+    /* Use very high specificity to override any other rules */
+    html[data-theme="dark"] body .stMarkdown .agent-number,
+    html[data-theme="dark"] body .stMarkdown .agent-number *,
+    html[data-theme="dark"] body .stMarkdown .agent-number strong,
+    html[data-theme="dark"] body .stMarkdown div.agent-number,
+    html[data-theme="dark"] body .stMarkdown div.agent-number *,
+    html[data-theme="dark"] body .stMarkdown div.agent-number strong,
     html[data-theme="dark"] body .agent-number,
     html[data-theme="dark"] body .agent-number *,
-    html[data-theme="dark"] body .agent-number strong {
+    html[data-theme="dark"] body .agent-number strong,
+    html[data-theme="dark"] body div.agent-number,
+    html[data-theme="dark"] body div.agent-number *,
+    html[data-theme="dark"] body div.agent-number strong {
         color: #ffffff !important; /* White for good contrast in dark mode */
     }
     
-    html[data-theme="dark"] .agent-name,
-    html[data-theme="dark"] .agent-name *,
-    html[data-theme="dark"] .agent-name strong,
-    html[data-theme="dark"] div.agent-name,
-    html[data-theme="dark"] div.agent-name *,
-    html[data-theme="dark"] div.agent-name strong,
-    html[data-theme="dark"] .agent-name-bright,
-    html[data-theme="dark"] .agent-name-bright *,
-    html[data-theme="dark"] .agent-name-bright strong,
-    html[data-theme="dark"] div.agent-name-bright,
-    html[data-theme="dark"] div.agent-name-bright *,
-    html[data-theme="dark"] div.agent-name-bright strong,
-    html[data-theme="dark"] [data-agent-name="true"],
-    html[data-theme="dark"] [data-agent-name="true"] *,
-    html[data-theme="dark"] [data-agent-name="true"] strong,
-    html[data-theme="dark"] [id^="agent-name-"],
-    html[data-theme="dark"] [id^="agent-name-"] *,
-    html[data-theme="dark"] [id^="agent-name-"] strong,
+    html[data-theme="dark"] body .stMarkdown .agent-name,
+    html[data-theme="dark"] body .stMarkdown .agent-name *,
+    html[data-theme="dark"] body .stMarkdown .agent-name strong,
+    html[data-theme="dark"] body .stMarkdown div.agent-name,
+    html[data-theme="dark"] body .stMarkdown div.agent-name *,
+    html[data-theme="dark"] body .stMarkdown div.agent-name strong,
+    html[data-theme="dark"] body .stMarkdown .agent-name-bright,
+    html[data-theme="dark"] body .stMarkdown .agent-name-bright *,
+    html[data-theme="dark"] body .stMarkdown .agent-name-bright strong,
+    html[data-theme="dark"] body .stMarkdown div.agent-name-bright,
+    html[data-theme="dark"] body .stMarkdown div.agent-name-bright *,
+    html[data-theme="dark"] body .stMarkdown div.agent-name-bright strong,
+    html[data-theme="dark"] body .stMarkdown [data-agent-name="true"],
+    html[data-theme="dark"] body .stMarkdown [data-agent-name="true"] *,
+    html[data-theme="dark"] body .stMarkdown [data-agent-name="true"] strong,
+    html[data-theme="dark"] body .stMarkdown [id^="agent-name-"],
+    html[data-theme="dark"] body .stMarkdown [id^="agent-name-"] *,
+    html[data-theme="dark"] body .stMarkdown [id^="agent-name-"] strong,
     html[data-theme="dark"] body .agent-name,
     html[data-theme="dark"] body .agent-name *,
     html[data-theme="dark"] body .agent-name strong,
+    html[data-theme="dark"] body div.agent-name,
+    html[data-theme="dark"] body div.agent-name *,
+    html[data-theme="dark"] body div.agent-name strong,
     html[data-theme="dark"] body .agent-name-bright,
     html[data-theme="dark"] body .agent-name-bright *,
-    html[data-theme="dark"] body .agent-name-bright strong {
+    html[data-theme="dark"] body .agent-name-bright strong,
+    html[data-theme="dark"] body div.agent-name-bright,
+    html[data-theme="dark"] body div.agent-name-bright *,
+    html[data-theme="dark"] body div.agent-name-bright strong,
+    html[data-theme="dark"] body [data-agent-name="true"],
+    html[data-theme="dark"] body [data-agent-name="true"] *,
+    html[data-theme="dark"] body [data-agent-name="true"] strong,
+    html[data-theme="dark"] body [id^="agent-name-"],
+    html[data-theme="dark"] body [id^="agent-name-"] *,
+    html[data-theme="dark"] body [id^="agent-name-"] strong {
         color: #ffffff !important; /* White for good contrast in dark mode */
+    }
+    
+    /* Agent name - make them dark/visible in light mode (only when NOT in dark mode) */
+    html:not([data-theme="dark"]) .agent-name,
+    html:not([data-theme="dark"]) .agent-name *,
+    html:not([data-theme="dark"]) .agent-name strong,
+    html:not([data-theme="dark"]) div.agent-name,
+    html:not([data-theme="dark"]) div.agent-name *,
+    html:not([data-theme="dark"]) div.agent-name strong,
+    html:not([data-theme="dark"]) .agent-name-bright,
+    html:not([data-theme="dark"]) .agent-name-bright *,
+    html:not([data-theme="dark"]) .agent-name-bright strong,
+    html:not([data-theme="dark"]) div.agent-name-bright,
+    html:not([data-theme="dark"]) div.agent-name-bright *,
+    html:not([data-theme="dark"]) div.agent-name-bright strong,
+    html:not([data-theme="dark"]) [data-agent-name="true"],
+    html:not([data-theme="dark"]) [data-agent-name="true"] *,
+    html:not([data-theme="dark"]) [data-agent-name="true"] strong {
+        color: #1e293b !important; /* Dark color for light mode visibility */
     }
     
     /* Override any Streamlit default dark mode text colors */
@@ -2141,37 +2155,70 @@ def main():
     }
     </style>
     <script>
-    // Simple script to ensure agent names/numbers are white in dark mode
+    // Force agent names/numbers to be white in dark mode - very aggressive approach
     (function() {
         function setAgentColors() {
-            var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            var isDark = document.documentElement.getAttribute('data-theme') === 'dark' || 
+                        document.documentElement.hasAttribute('data-theme') && 
+                        document.documentElement.getAttribute('data-theme') === 'dark';
             if (!isDark) return;
             
-            // Target agent names and numbers
-            var elements = document.querySelectorAll(
-                '.agent-number, .agent-number *, .agent-number strong, ' +
-                'div.agent-number, div.agent-number *, div.agent-number strong, ' +
-                '.agent-name, .agent-name *, .agent-name strong, ' +
-                'div.agent-name, div.agent-name *, div.agent-name strong, ' +
-                '.agent-name-bright, .agent-name-bright *, .agent-name-bright strong, ' +
-                'div.agent-name-bright, div.agent-name-bright *, div.agent-name-bright strong, ' +
-                '[data-agent-name="true"], [data-agent-name="true"] *, [data-agent-name="true"] strong, ' +
-                '[id^="agent-name-"], [id^="agent-name-"] *, [id^="agent-name-"] strong'
-            );
+            // Use multiple selector strategies to find all agent names and numbers
+            var selectors = [
+                '.agent-number',
+                'div.agent-number',
+                '.agent-name',
+                'div.agent-name',
+                '.agent-name-bright',
+                'div.agent-name-bright',
+                '[data-agent-name="true"]',
+                '[id^="agent-name-"]'
+            ];
             
-            elements.forEach(function(el) {
-                el.style.color = '#ffffff';
-                el.style.setProperty('color', '#ffffff', 'important');
+            selectors.forEach(function(selector) {
+                var elements = document.querySelectorAll(selector);
+                elements.forEach(function(el) {
+                    // Set on element itself
+                    el.style.setProperty('color', '#ffffff', 'important');
+                    el.style.color = '#ffffff';
+                    
+                    // Set on all children including strong tags
+                    var children = el.querySelectorAll('*');
+                    children.forEach(function(child) {
+                        child.style.setProperty('color', '#ffffff', 'important');
+                        child.style.color = '#ffffff';
+                    });
+                });
             });
         }
         
-        // Run immediately and on theme changes
-        setAgentColors();
-        var observer = new MutationObserver(function() {
+        // Run immediately
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', setAgentColors);
+        } else {
             setAgentColors();
+        }
+        
+        // Run on theme changes
+        var themeObserver = new MutationObserver(function() {
+            setTimeout(setAgentColors, 10);
         });
-        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
-        setInterval(setAgentColors, 100);
+        themeObserver.observe(document.documentElement, { 
+            attributes: true, 
+            attributeFilter: ['data-theme'] 
+        });
+        
+        // Run continuously to catch dynamically added elements
+        setInterval(setAgentColors, 200);
+        
+        // Also watch for DOM changes
+        var domObserver = new MutationObserver(function() {
+            setTimeout(setAgentColors, 10);
+        });
+        domObserver.observe(document.body, { 
+            childList: true, 
+            subtree: true 
+        });
     })();
     
     // Force "Welcome to Denken Labs" to be light in dark mode - target div with ID welcome-title-element
