@@ -2686,8 +2686,30 @@ def main():
                 st.session_state.name_examples = generate_creative_name_examples()
             
             name_examples = st.session_state.name_examples
-            example_text = f"Examples: {', '.join(name_examples)}"
-            st.markdown(f'<div class="creative-name-intro">**Enter your creative name!** *{example_text}*</div>', unsafe_allow_html=True)
+            
+            st.markdown('<div class="creative-name-intro">**Enter your creative name!** *Or click on an example below:*</div>', unsafe_allow_html=True)
+            
+            # Display examples as clickable buttons
+            col1, col2, col3 = st.columns(3)
+            selected_example = None
+            
+            with col1:
+                if st.button(name_examples[0], key="example_1", use_container_width=True):
+                    selected_example = name_examples[0]
+            with col2:
+                if st.button(name_examples[1], key="example_2", use_container_width=True):
+                    selected_example = name_examples[1]
+            with col3:
+                if st.button(name_examples[2], key="example_3", use_container_width=True):
+                    selected_example = name_examples[2]
+            
+            # If user clicked an example, use it immediately
+            if selected_example:
+                st.session_state.user_creative_name = selected_example
+                if 'name_examples' in st.session_state:
+                    del st.session_state.name_examples
+                play_sound('user_name')
+                st.rerun()
             
             with st.form("user_name_form", clear_on_submit=True):
                 # Add CSS to make name input slightly bigger
@@ -2702,15 +2724,14 @@ def main():
                 """, unsafe_allow_html=True)
                 
                 user_creative_name = st.text_input(
-                    "Enter your creative name:",
+                    "Or enter your own creative name:",
                     placeholder=f"Example: {name_examples[0]}",
                     key="user_name_input"
                 )
                 name_submitted = st.form_submit_button("Continue", type="primary", use_container_width=True)
                 
                 if name_submitted:
-                    # Use first example name if nothing entered or only whitespace
-                    # This will use the same example that was displayed
+                    # Use entered name or first example if empty
                     if not user_creative_name or not user_creative_name.strip():
                         st.session_state.user_creative_name = name_examples[0]
                     else:
