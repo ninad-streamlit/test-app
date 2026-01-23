@@ -2242,11 +2242,14 @@ def main():
     </style>
     <script>
     // ULTIMATE FIX: Inject CSS dynamically AND force inline styles
+    console.log('AGENT COLOR FIX: Script starting...');
     (function() {
+        console.log('AGENT COLOR FIX: IIFE executing...');
         // First, inject CSS rules dynamically to ensure they load after Streamlit's CSS
         // These MUST override the light mode rules that are incorrectly applying
         var styleId = 'agent-color-fix-dynamic';
         if (!document.getElementById(styleId)) {
+            console.log('AGENT COLOR FIX: Injecting CSS...');
             var style = document.createElement('style');
             style.id = styleId;
             style.textContent = `
@@ -2327,6 +2330,9 @@ def main():
                 }
             `;
             document.head.appendChild(style);
+            console.log('AGENT COLOR FIX: CSS injected successfully');
+        } else {
+            console.log('AGENT COLOR FIX: CSS already exists');
         }
         
         // Second, force inline styles as ultimate backup - VERY AGGRESSIVE
@@ -2336,7 +2342,11 @@ def main():
                 var htmlTheme = document.documentElement.getAttribute('data-theme');
                 var bodyTheme = document.body ? document.body.getAttribute('data-theme') : null;
                 var isDark = htmlTheme === 'dark' || bodyTheme === 'dark';
-                if (!isDark) return; // Only force in dark mode
+                console.log('AGENT COLOR FIX: Theme check - html:', htmlTheme, 'body:', bodyTheme, 'isDark:', isDark);
+                if (!isDark) {
+                    console.log('AGENT COLOR FIX: Not dark mode, skipping');
+                    return; // Only force in dark mode
+                }
                 
                 var targetColor = '#ffffff';
                 var count = 0;
@@ -2357,10 +2367,16 @@ def main():
                 ];
                 
                 strongSelectors.forEach(function(selector) {
-                    document.querySelectorAll(selector).forEach(function(el) {
-                        el.style.cssText = 'color: ' + targetColor + ' !important;';
-                        count++;
-                    });
+                    try {
+                        var elements = document.querySelectorAll(selector);
+                        console.log('AGENT COLOR FIX: Selector "' + selector + '" found', elements.length, 'elements');
+                        elements.forEach(function(el) {
+                            el.style.cssText = 'color: ' + targetColor + ' !important;';
+                            count++;
+                        });
+                    } catch(e) {
+                        console.error('AGENT COLOR FIX: Error with selector "' + selector + '":', e);
+                    }
                 });
                 
                 // Also target parent divs and force on all descendants
@@ -2374,12 +2390,16 @@ def main():
                 
                 // Debug: log if we found elements (remove in production if desired)
                 if (count > 0) {
-                    console.log('Applied white color to', count, 'agent strong elements');
+                    console.log('AGENT COLOR FIX: Applied white color to', count, 'agent strong elements');
+                } else {
+                    console.log('AGENT COLOR FIX: No agent strong elements found!');
                 }
             } catch(e) {
-                console.error('Error in forceAgentColors:', e);
+                console.error('AGENT COLOR FIX: Error in forceAgentColors:', e);
             }
         }
+        
+        console.log('AGENT COLOR FIX: forceAgentColors function defined');
         
         // Run immediately multiple times
         forceAgentColors();
@@ -2420,7 +2440,10 @@ def main():
             childList: true, 
             subtree: true 
         });
+        
+        console.log('AGENT COLOR FIX: Script initialization complete. Observers set up.');
     })();
+    console.log('AGENT COLOR FIX: Script block executed');
     
     // Force "Welcome to Denken Labs" to be light in dark mode - target div with ID welcome-title-element
     function forceWelcomeTitleLight() {
